@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="25dp"
+        android:layout_above="@id/next">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your Phone number"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:textSize="18sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Please confirm your country code and enter your phone number"
+            android:gravity="center"
+            android:textColor="@color/text"
+            android:layout_marginTop="10dp"
+            android:textSize="14sp" />
+
+        <com.hbb20.CountryCodePicker
+            android:id="@+id/countryPick"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:ccp_autoDetectCountry="true"
+            app:ccp_showNameCode="false"
+            app:ccp_showPhoneCode="false"
+            app:ccpDialog_showPhoneCode="true"
+            app:ccp_showFullName="true"
+            app:ccp_arrowSize="24sp"
+            app:ccpDialog_cornerRadius="12dp"
+            app:ccp_rippleEnable="true"
+            app:ccp_padding="15dp"
+            android:background="@drawable/stroke"
+            app:ccp_contentColor="@color/black"
+            android:layout_marginTop="12dp"
+            app:ccpDialog_textColor="@color/black"
+            app:ccpDialog_showCloseIcon="true"
+            android:gravity="center"/>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/phoneNumber"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxStrokeColor="@color/blue"
+            app:hintTextColor="@color/blue"
+            android:hint="Phone Number">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/next"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="20dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/blue"
+        app:cardElevation="6dp"
+        app:strokeWidth="0dp"
+        app:cardCornerRadius="100dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/round_arrow_forward_24"
+            app:tint="@color/white"
+            android:layout_margin="20dp" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+</RelativeLayout>
