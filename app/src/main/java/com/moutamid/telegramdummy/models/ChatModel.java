@@ -3,17 +3,27 @@ package com.moutamid.telegramdummy.models;
 public class ChatModel {
     String id, userID, name, image, lastMessage;
     long timestamp;
+    boolean isSeen;
 
     public ChatModel() {
     }
 
-    public ChatModel(String id, String userID, String name, String image, String lastMessage, long timestamp) {
+    public ChatModel(String id, String userID, String name, String image, String lastMessage, long timestamp, boolean isSeen) {
         this.id = id;
         this.userID = userID;
         this.name = name;
         this.image = image;
         this.lastMessage = lastMessage;
         this.timestamp = timestamp;
+        this.isSeen = isSeen;
+    }
+
+    public boolean isSeen() {
+        return isSeen;
+    }
+
+    public void setSeen(boolean seen) {
+        isSeen = seen;
     }
 
     public String getUserID() {

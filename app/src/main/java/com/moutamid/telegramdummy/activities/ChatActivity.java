@@ -171,7 +171,7 @@ public class ChatActivity extends AppCompatActivity {
         chatModel.setLastMessage(message);
         chatModel.setTimestamp(new Date().getTime());
         UserModel userModel = (UserModel) Stash.getObject(Constants.STASH_USER, UserModel.class);
-        ChatModel receiver = new ChatModel(chatModel.getId(), userModel.getID(), userModel.getName(), userModel.getImage(), message, new Date().getTime());
+        ChatModel receiver = new ChatModel(chatModel.getId(), userModel.getID(), userModel.getName(), userModel.getImage(), message, new Date().getTime(), false);
 
         Constants.databaseReference().child(Constants.CHATS).child(Constants.auth().getCurrentUser().getUid())
                 .child(chatModel.getId()).setValue(chatModel)

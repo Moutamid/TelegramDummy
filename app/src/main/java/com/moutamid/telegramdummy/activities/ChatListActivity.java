@@ -161,9 +161,9 @@ public class ChatListActivity extends AppCompatActivity implements NavigationVie
 
     private void createChat(UserModel userModel) {
         Constants.initDialog(this, "Creating Chat with " + userModel.getName());
-        ChatModel chatModel = new ChatModel(UUID.randomUUID().toString(), userModel.getID(), userModel.getName(), userModel.getImage(), userModel.getName() + " joined Telegram", new Date().getTime());
+        ChatModel chatModel = new ChatModel(UUID.randomUUID().toString(), userModel.getID(), userModel.getName(), userModel.getImage(), userModel.getName() + " joined Telegram", new Date().getTime(), false);
         UserModel stashUser = (UserModel) Stash.getObject(Constants.STASH_USER, UserModel.class);
-        ChatModel receiver = new ChatModel(chatModel.getId(), stashUser.getID(), stashUser.getName(), stashUser.getImage(), stashUser.getName() + " joined Telegram", new Date().getTime());
+        ChatModel receiver = new ChatModel(chatModel.getId(), stashUser.getID(), stashUser.getName(), stashUser.getImage(), stashUser.getName() + " joined Telegram", new Date().getTime(), false);
         Constants.databaseReference().child(Constants.CHATS).child(Constants.auth().getCurrentUser().getUid())
                 .child(chatModel.getId()).setValue(chatModel)
                 .addOnSuccessListener(unused -> {
