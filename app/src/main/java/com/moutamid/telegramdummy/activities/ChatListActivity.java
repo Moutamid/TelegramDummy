@@ -2,16 +2,14 @@ package com.moutamid.telegramdummy.activities;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -21,13 +19,19 @@ import androidx.core.view.GravityCompat;
 
 import com.avatarfirst.avatargenlib.AvatarGenerator;
 import com.bumptech.glide.Glide;
+import com.fxn.stash.Stash;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.database.DataSnapshot;
 import com.moutamid.telegramdummy.R;
 import com.moutamid.telegramdummy.databinding.ActivityChatListBinding;
+import com.moutamid.telegramdummy.fragment.ChatFragment;
+import com.moutamid.telegramdummy.models.ChatModel;
 import com.moutamid.telegramdummy.models.UserModel;
 import com.moutamid.telegramdummy.utili.Constants;
 
+import java.util.Date;
 import java.util.Locale;
+import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -50,12 +54,13 @@ public class ChatListActivity extends AppCompatActivity implements NavigationVie
         binding.drawLayout.addDrawerListener(toggle);
         toggle.syncState();
 
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ChatFragment()).commit();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Constants.initDialog(this);
+        Constants.initDialog(this, "Please Wait");
         updateNavHead();
     }
 
@@ -67,8 +72,9 @@ public class ChatListActivity extends AppCompatActivity implements NavigationVie
 
         Constants.databaseReference().child(Constants.USER).child(Constants.auth().getCurrentUser().getUid())
                 .get().addOnSuccessListener(dataSnapshot -> {
-                    if (dataSnapshot.exists()){
+                    if (dataSnapshot.exists()) {
                         UserModel userModel = dataSnapshot.getValue(UserModel.class);
+                        Stash.put(Constants.STASH_USER, userModel);
                         name.setText(userModel.getName());
                         phoneNumber.setText(userModel.getNumber());
                         if (userModel.getImage().isEmpty()) {
@@ -76,7 +82,7 @@ public class ChatListActivity extends AppCompatActivity implements NavigationVie
                                     new AvatarGenerator.AvatarBuilder(this)
                                             .setLabel(userModel.getName().toUpperCase(Locale.ROOT))
                                             .setAvatarSize(70)
-                                            .setBackgroundColor(getRandomColor())
+                                            .setBackgroundColor(Constants.getRandomColor())
                                             .setTextSize(13)
                                             .toCircle()
                                             .build()
@@ -86,13 +92,6 @@ public class ChatListActivity extends AppCompatActivity implements NavigationVie
                     }
                 });
 
-    }
-
-    public static int getRandomColor() {
-        int r = (int) (Math.random() * 256);
-        int g = (int) (Math.random() * 256);
-        int b = (int) (Math.random() * 256);
-        return Color.rgb(r, g, b);
     }
 
     @Override
@@ -116,6 +115,7 @@ public class ChatListActivity extends AppCompatActivity implements NavigationVie
             @Override
             public boolean onQueryTextSubmit(String query) {
                 // Handle the submission of the search query
+                searchUser(query.trim());
                 return true;
             }
 
@@ -128,6 +128,62 @@ public class ChatListActivity extends AppCompatActivity implements NavigationVie
 
         return true;
     }
+
+    private void searchUser(String query) {
+        Constants.showDialog();
+        Constants.databaseReference().child(Constants.USER).get()
+                .addOnSuccessListener(dataSnapshot -> {
+                    Constants.dismissDialog();
+                    if (dataSnapshot.exists()) {
+                        boolean check = false;
+                        UserModel userModel = null;
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            userModel = snapshot.getValue(UserModel.class);
+                            if (userModel.getUsername().equals(query) && !userModel.getID().equals(Constants.auth().getCurrentUser().getUid())) {
+                                check = true;
+                                break;
+                            }
+                        }
+
+                        if (check) {
+                            Stash.put(Constants.PASS_USER, userModel);
+                            createChat(userModel);
+                        } else {
+                            Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+                }).addOnFailureListener(e -> {
+                    Constants.dismissDialog();
+                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void createChat(UserModel userModel) {
+        Constants.initDialog(this, "Creating Chat with " + userModel.getName());
+        ChatModel chatModel = new ChatModel(UUID.randomUUID().toString(), userModel.getID(), userModel.getName(), userModel.getImage(), userModel.getName() + " joined Telegram", new Date().getTime());
+        UserModel stashUser = (UserModel) Stash.getObject(Constants.STASH_USER, UserModel.class);
+        ChatModel receiver = new ChatModel(chatModel.getId(), stashUser.getID(), stashUser.getName(), stashUser.getImage(), stashUser.getName() + " joined Telegram", new Date().getTime());
+        Constants.databaseReference().child(Constants.CHATS).child(Constants.auth().getCurrentUser().getUid())
+                .child(chatModel.getId()).setValue(chatModel)
+                .addOnSuccessListener(unused -> {
+                    Constants.databaseReference().child(Constants.CHATS).child(userModel.getID())
+                            .child(chatModel.getId()).setValue(receiver)
+                            .addOnSuccessListener(unused2 -> {
+                                Constants.dismissDialog();
+                                Stash.put(Constants.PASS_CHAT, chatModel);
+                                Toast.makeText(this, "Happy Chatting!", Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(this, ChatActivity.class));
+                            }).addOnFailureListener(e -> {
+                                Constants.dismissDialog();
+                                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                            });
+                }).addOnFailureListener(e -> {
+                    Constants.dismissDialog();
+                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {

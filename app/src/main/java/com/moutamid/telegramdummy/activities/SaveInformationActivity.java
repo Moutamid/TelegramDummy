@@ -8,6 +8,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.InputFilter;
+import android.text.method.DigitsKeyListener;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -16,6 +18,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
+import com.fxn.stash.Stash;
 import com.google.firebase.database.DataSnapshot;
 import com.moutamid.telegramdummy.databinding.ActivitySaveInformationBinding;
 import com.moutamid.telegramdummy.models.UserModel;
@@ -37,7 +40,9 @@ public class SaveInformationActivity extends AppCompatActivity {
 
         number = getIntent().getStringExtra("number");
 
-        binding.firstname.getEditText().requestFocus();
+        binding.username.getEditText().requestFocus();
+
+      //  setEditTextFilters();
 
         binding.profile.setOnClickListener(v -> {
             if (checkPermission()) {
@@ -67,10 +72,10 @@ public class SaveInformationActivity extends AppCompatActivity {
         binding.next.setOnClickListener(v -> {
             binding.username.setErrorEnabled(false);
             binding.firstname.setErrorEnabled(false);
-            if (!binding.username.getEditText().getText().toString().isEmpty()) {
+            if (binding.username.getEditText().getText().toString().isEmpty()) {
                 binding.username.setErrorEnabled(true);
                 binding.username.setError("Username is required");
-            } else if (!binding.firstname.getEditText().getText().toString().isEmpty()) {
+            } else if (binding.firstname.getEditText().getText().toString().isEmpty()) {
                 binding.firstname.setErrorEnabled(true);
                 binding.firstname.setError("First name is required");
             } else {
@@ -81,6 +86,26 @@ public class SaveInformationActivity extends AppCompatActivity {
         });
 
     }
+
+    public void setEditTextFilters() {
+        final String acceptedChars = "abcdefghijklmnopqrstuvwxyz0123456789._";
+
+        InputFilter inputFilter = (source, start, end, dest, dstart, dend) -> {
+            for (int i = start; i < end; i++) {
+                if (acceptedChars.indexOf(source.charAt(i)) == -1) {
+                    Toast.makeText(SaveInformationActivity.this, "You can't enter " + source.charAt(i), Toast.LENGTH_SHORT).show();
+                    return "";
+                }
+            }
+            return null;
+        };
+
+        DigitsKeyListener keyListener = DigitsKeyListener.getInstance(acceptedChars);
+
+        binding.username.getEditText().setFilters(new InputFilter[]{inputFilter});
+        binding.username.getEditText().setKeyListener(keyListener);
+    }
+
 
     private void checkUsername(String username) {
         Constants.databaseReference().child(Constants.USER).get()
@@ -103,6 +128,10 @@ public class SaveInformationActivity extends AppCompatActivity {
                                 uploadImage();
                             } else uploadData("");
                         }
+                    } else {
+                        if (imageUri != null) {
+                            uploadImage();
+                        } else uploadData("");
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -151,7 +180,7 @@ public class SaveInformationActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Constants.initDialog(this);
+        Constants.initDialog(this, "Creating your account");
     }
 
     @Override
