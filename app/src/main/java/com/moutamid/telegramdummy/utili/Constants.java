@@ -37,6 +37,7 @@ public class Constants {
     public static final String TAG = "Constants";
     public static final String USER = "USER";
     public static final String CHATS = "CHATS";
+    public static final String CHAT_LIST = "CHAT_LIST";
     public static final String MESSAGES = "MESSAGES";
     public static final String PASS_CHAT = "PASS_CHAT";
     public static final String STASH_USER = "STASH_USER";

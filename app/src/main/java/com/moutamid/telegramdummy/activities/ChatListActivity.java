@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,6 +17,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.view.GravityCompat;
+import androidx.core.view.MenuItemCompat;
 
 import com.avatarfirst.avatargenlib.AvatarGenerator;
 import com.bumptech.glide.Glide;
@@ -29,6 +31,7 @@ import com.moutamid.telegramdummy.models.ChatModel;
 import com.moutamid.telegramdummy.models.UserModel;
 import com.moutamid.telegramdummy.utili.Constants;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
@@ -37,6 +40,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ChatListActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     ActivityChatListBinding binding;
+    ChatFragment cf;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +49,7 @@ public class ChatListActivity extends AppCompatActivity implements NavigationVie
         setContentView(binding.getRoot());
         Constants.checkApp(this);
         setSupportActionBar(binding.toolbar);
-
+        cf = new ChatFragment();
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this,
                 binding.drawLayout, binding.toolbar,
@@ -54,7 +58,7 @@ public class ChatListActivity extends AppCompatActivity implements NavigationVie
         binding.drawLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ChatFragment()).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, cf).commit();
     }
 
     @Override
@@ -109,19 +113,47 @@ public class ChatListActivity extends AppCompatActivity implements NavigationVie
         inflater.inflate(R.menu.search_menu, menu);
 
         MenuItem searchItem = menu.findItem(R.id.action_search);
+        MenuItem action_add = menu.findItem(R.id.action_add);
         SearchView searchView = (SearchView) searchItem.getActionView();
+        android.widget.SearchView addView = (android.widget.SearchView) action_add.getActionView();
+
+        int searchImgId = getResources().getIdentifier("android:id/search_button", null, null);
+        ImageView v = (ImageView) addView.findViewById(searchImgId);
+        v.setImageResource(R.drawable.user_plus_solid);
+
+        addView.setQueryHint("Add Friend");
+        searchView.setQueryHint("Search Chat");
+
+        addView.setOnQueryTextListener(new android.widget.SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                searchUser(query.trim());
+                addView.clearFocus();
+                MenuItemCompat.collapseActionView(action_add);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 // Handle the submission of the search query
-                searchUser(query.trim());
+                searchView.clearFocus();
+                MenuItemCompat.collapseActionView(searchItem);
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
                 // Handle changes in the search query text
+                if (cf.adapter != null) {
+                    cf.adapter.getFilter().filter(newText);
+                }
                 return true;
             }
         });
@@ -139,15 +171,36 @@ public class ChatListActivity extends AppCompatActivity implements NavigationVie
                         UserModel userModel = null;
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                             userModel = snapshot.getValue(UserModel.class);
-                            if (userModel.getUsername().equals(query) && !userModel.getID().equals(Constants.auth().getCurrentUser().getUid())) {
+                            if ((userModel.getUsername().equals(query) && !userModel.getID().equals(Constants.auth().getCurrentUser().getUid())) ||
+                                    userModel.getNumber().contains(query)
+                            ) {
                                 check = true;
                                 break;
                             }
                         }
 
                         if (check) {
-                            Stash.put(Constants.PASS_USER, userModel);
-                            createChat(userModel);
+                            ArrayList<ChatModel> list = Stash.getArrayList(Constants.CHAT_LIST, ChatModel.class);
+                            if (list.size() > 0) {
+                                boolean c = false;
+                                for (ChatModel model : list) {
+                                    if (userModel.getID().equals(model.getUserID())) {
+                                        c = true;
+                                        break;
+                                    }
+                                }
+
+                                if (c) {
+                                    Toast.makeText(this, "User already is in you chat list", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Stash.put(Constants.PASS_USER, userModel);
+                                    createChat(userModel);
+                                }
+
+                            } else {
+                                Stash.put(Constants.PASS_USER, userModel);
+                                createChat(userModel);
+                            }
                         } else {
                             Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show();
                         }

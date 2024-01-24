@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.fxn.stash.Stash;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 public class ChatFragment extends Fragment {
     FragmentChatBinding binding;
     ArrayList<ChatModel> list;
+    public ChatAdapter adapter;
     public ChatFragment() {
         // Required empty public constructor
     }
@@ -62,18 +64,15 @@ public class ChatFragment extends Fragment {
                                 ChatModel model = dataSnapshot.getValue(ChatModel.class);
                                 list.add(model);
                             }
-
-                            if (list.size() > 0){
-                                binding.chatRC.setVisibility(View.VISIBLE);
-                            } else {
-                                binding.chatRC.setVisibility(View.GONE);
-                                Toast.makeText(requireContext(), "No Chat Found", Toast.LENGTH_SHORT).show();
-                            }
-                            ChatAdapter adapter = new ChatAdapter(requireContext(), list);
+                            adapter = new ChatAdapter(requireContext(), list);
                             binding.chatRC.setAdapter(adapter);
                         } else {
+                            list.clear();
+                            adapter = new ChatAdapter(requireContext(), list);
+                            binding.chatRC.setAdapter(adapter);
                             Toast.makeText(requireContext(), "No Chat Found", Toast.LENGTH_SHORT).show();
                         }
+                        Stash.put(Constants.CHAT_LIST, list);
                     }
 
                     @Override

@@ -1,19 +1,28 @@
 package com.moutamid.telegramdummy.models;
 
 public class MessageModel {
-    String id, senderID, message;
+    String id, senderID, message, image;
     long timestamp;
     boolean isMedia;
 
     public MessageModel() {
     }
 
-    public MessageModel(String id, String senderID, String message, long timestamp, boolean isMedia) {
+    public MessageModel(String id, String senderID, String message, String image, long timestamp, boolean isMedia) {
         this.id = id;
         this.senderID = senderID;
         this.message = message;
+        this.image = image;
         this.timestamp = timestamp;
         this.isMedia = isMedia;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 
     public String getId() {

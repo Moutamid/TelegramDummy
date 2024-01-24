@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -20,18 +22,21 @@ import com.moutamid.telegramdummy.utili.Constants;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Locale;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatVH> {
+public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatVH> implements Filterable {
 
     Context context;
     ArrayList<ChatModel> list;
+    ArrayList<ChatModel> listAll;
 
     public ChatAdapter(Context context, ArrayList<ChatModel> list) {
         this.context = context;
         this.list = list;
+        this.listAll = new ArrayList<>(list);
     }
 
     @NonNull
@@ -64,6 +69,38 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatVH> {
     public int getItemCount() {
         return list.size();
     }
+
+    @Override
+    public Filter getFilter() {
+        return filter;
+    }
+
+    Filter filter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence charSequence) {
+            ArrayList<ChatModel> filterList = new ArrayList<>();
+            if (charSequence.toString().isEmpty()){
+                filterList.addAll(listAll);
+            } else {
+                for (ChatModel listModel : listAll){
+                    if (listModel.getName().toLowerCase().contains(charSequence.toString().toLowerCase())){
+                        filterList.add(listModel);
+                    }
+                }
+            }
+            FilterResults filterResults = new FilterResults();
+            filterResults.values = filterList;
+
+            return filterResults;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            list.clear();
+            list.addAll((Collection<? extends ChatModel>) results.values);
+            notifyDataSetChanged();
+        }
+    };
 
     public class ChatVH extends RecyclerView.ViewHolder{
         CircleImageView profile;
