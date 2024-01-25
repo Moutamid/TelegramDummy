@@ -84,6 +84,7 @@ public class ChatActivity extends AppCompatActivity {
         binding.message.requestFocus();
 
         binding.mainLayout.setOnClickListener(v -> {
+            Stash.put(Constants.PASS_USER, chatModel);
             startActivity(new Intent(this, EditContactActivity.class));
             finish();
         });
