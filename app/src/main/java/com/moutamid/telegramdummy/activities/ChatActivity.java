@@ -17,7 +17,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.MenuBuilder;
@@ -32,9 +31,6 @@ import com.fxn.stash.Stash;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.checkbox.MaterialCheckBox;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.moutamid.telegramdummy.R;
 import com.moutamid.telegramdummy.adapter.MessageAdapter;
 import com.moutamid.telegramdummy.databinding.ActivityChatBinding;
@@ -43,9 +39,7 @@ import com.moutamid.telegramdummy.models.MessageModel;
 import com.moutamid.telegramdummy.models.UserModel;
 import com.moutamid.telegramdummy.utili.Constants;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
@@ -57,8 +51,7 @@ public class ChatActivity extends AppCompatActivity {
     MessageAdapter adapter;
     private static final int PICK_IMAGE_REQUEST = 1001;
     boolean isSearchEnable = false;
-    String imageLink = "";
-    Uri imageUri;
+    Uri imageUri = Uri.EMPTY;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +68,7 @@ public class ChatActivity extends AppCompatActivity {
         chatModel = (ChatModel) Stash.getObject(Constants.PASS_CHAT, ChatModel.class);
 
         binding.name.setText(chatModel.getName());
+        binding.status.setText(chatModel.getStatus());
 
         binding.chatRC.setHasFixedSize(false);
         binding.chatRC.setLayoutManager(new LinearLayoutManager(this));
@@ -82,20 +76,20 @@ public class ChatActivity extends AppCompatActivity {
         Glide.with(this).load(chatModel.getImage()).placeholder(new AvatarGenerator.AvatarBuilder(this)
                 .setLabel(chatModel.getName().toUpperCase(Locale.ROOT))
                 .setAvatarSize(50)
-                .setBackgroundColor(Constants.getRandomColor())
+                .setBackgroundColor(chatModel.getColor())
                 .setTextSize(14)
                 .toCircle()
                 .build()).into(binding.profile);
 
         binding.message.requestFocus();
 
+        binding.mainLayout.setOnClickListener(v -> {
+            startActivity(new Intent(this, EditContactActivity.class));
+            finish();
+        });
+
         binding.emoji.setOnClickListener(v -> {
             binding.message.requestFocus();
-            /*InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            if (inputMethodManager != null) {
-                binding.message.setInputType(EditorInfo.TYPE_TEXT_VARIATION_SHORT_MESSAGE);
-                inputMethodManager.showSoftInput(binding.message, InputMethodManager.SHOW_IMPLICIT);
-            }*/
         });
 
         binding.attach.setOnClickListener(v -> {
@@ -103,7 +97,9 @@ public class ChatActivity extends AppCompatActivity {
             startActivityForResult(Intent.createChooser(intent, "Pick Image"), PICK_IMAGE_REQUEST);
         });
 
-        binding.send.setOnClickListener(v -> sendMessage(binding.message.getText().toString(), false));
+        binding.send.setOnClickListener(v -> send(binding.message.getText().toString(), false, binding.message.getText().toString()));
+        binding.receive.setOnClickListener(v -> receive(binding.message.getText().toString(), false, binding.message.getText().toString()));
+
         binding.camera.setOnClickListener(v -> openCamera());
 
         binding.message.addTextChangedListener(new TextWatcher() {
@@ -116,10 +112,12 @@ public class ChatActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.toString().isEmpty()) {
                     binding.send.setVisibility(View.GONE);
+                    binding.receive.setVisibility(View.GONE);
                     binding.attach.setVisibility(View.VISIBLE);
                     binding.camera.setVisibility(View.VISIBLE);
                 } else {
                     binding.send.setVisibility(View.VISIBLE);
+                    binding.receive.setVisibility(View.VISIBLE);
                     binding.attach.setVisibility(View.GONE);
                     binding.camera.setVisibility(View.GONE);
                 }
@@ -140,88 +138,49 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Constants.initDialog(this, "Please Wait");
-        list.clear();
         getMessages();
     }
 
     private void getMessages() {
-        Constants.showDialog();
-        Constants.databaseReference().child(Constants.MESSAGES).child(chatModel.getId()).child(Constants.auth().getCurrentUser().getUid())
-                .addChildEventListener(new ChildEventListener() {
-                    @Override
-                    public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                        Constants.dismissDialog();
-                        if (snapshot.exists()) {
-                            MessageModel model = snapshot.getValue(MessageModel.class);
-                            list.add(model);
-                            list.sort(Comparator.comparing(MessageModel::getTimestamp));
-                            adapter = new MessageAdapter(ChatActivity.this, list, chatModel.getName());
-                            binding.chatRC.setAdapter(adapter);
-                            binding.chatRC.scrollToPosition(list.size() - 1);
-                        }
-                    }
-
-                    @Override
-                    public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                        Constants.dismissDialog();
-                    }
-
-                    @Override
-                    public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                        Constants.dismissDialog();
-                        adapter.notifyAll();
-                    }
-
-                    @Override
-                    public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                        Constants.dismissDialog();
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Constants.dismissDialog();
-                    }
-                });
+        list = Stash.getArrayList(chatModel.getId(), MessageModel.class);
+        adapter = new MessageAdapter(this, list, chatModel.getName());
+        binding.chatRC.setAdapter(adapter);
+        binding.chatRC.scrollToPosition(list.size() - 1);
     }
 
-    private void sendMessage(String message, boolean isMedia) {
-        binding.message.setText("");
-        chatModel.setLastMessage(message);
-        chatModel.setTimestamp(new Date().getTime());
-        UserModel userModel = (UserModel) Stash.getObject(Constants.STASH_USER, UserModel.class);
-        ChatModel receiver = new ChatModel(chatModel.getId(), userModel.getID(), userModel.getName(), userModel.getImage(), message, new Date().getTime(), false);
-
-        Constants.databaseReference().child(Constants.CHATS).child(Constants.auth().getCurrentUser().getUid())
-                .child(chatModel.getId()).setValue(chatModel)
-                .addOnSuccessListener(unused -> {
-                    Constants.databaseReference().child(Constants.CHATS).child(chatModel.getUserID())
-                            .child(chatModel.getId()).setValue(receiver)
-                            .addOnSuccessListener(unused2 -> {
-                                send(message, isMedia);
-                            }).addOnFailureListener(e -> {
-                                Constants.dismissDialog();
-                                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                            });
-                }).addOnFailureListener(e -> {
-                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+    private void receive(String message, boolean isMedia, String last) {
+        if (!message.isEmpty() || isMedia) {
+            binding.message.setText("");
+            chatModel.setLastMessage(last);
+            chatModel.setTimestamp(new Date().getTime());
+            ArrayList<ChatModel> chatList = Stash.getArrayList(Constants.USER, ChatModel.class);
+            int index = retrieveIndex(chatList);
+            chatList.set(index, chatModel);
+            Stash.put(Constants.USER, chatList);
+            MessageModel messageModel = new MessageModel(UUID.randomUUID().toString(), chatModel.getId(), message, imageUri.toString(), new Date().getTime(), isMedia);
+            list.add(messageModel);
+            Stash.put(chatModel.getId(), list);
+            adapter.notifyItemInserted(list.size() - 1);
+            binding.chatRC.scrollToPosition(list.size() - 1);
+        }
     }
 
-    private void send(String message, boolean isMedia) {
-        MessageModel messageModel = new MessageModel(UUID.randomUUID().toString(), Constants.auth().getCurrentUser().getUid(), message, imageLink, new Date().getTime(), isMedia);
-        Constants.databaseReference().child(Constants.MESSAGES).child(chatModel.getId()).child(chatModel.getUserID())
-                .child(messageModel.getId()).setValue(messageModel)
-                .addOnSuccessListener(unused -> {
-                    Constants.databaseReference().child(Constants.MESSAGES).child(chatModel.getId()).child(Constants.auth().getCurrentUser().getUid())
-                            .child(messageModel.getId()).setValue(messageModel)
-                            .addOnSuccessListener(unused1 -> imageLink = "")
-                            .addOnFailureListener(e -> {
-                                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                            });
-                }).addOnFailureListener(e -> {
-                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+    private void send(String message, boolean isMedia, String last) {
+        if (!message.isEmpty() || isMedia) {
+            binding.message.setText("");
+            chatModel.setLastMessage(last);
+            chatModel.setTimestamp(new Date().getTime());
+            ArrayList<ChatModel> chatList = Stash.getArrayList(Constants.USER, ChatModel.class);
+            int index = retrieveIndex(chatList);
+            chatList.set(index, chatModel);
+            Stash.put(Constants.USER, chatList);
+            UserModel userModel = (UserModel) Stash.getObject(Constants.STASH_USER, UserModel.class);
+            MessageModel messageModel = new MessageModel(UUID.randomUUID().toString(), userModel.getNumber(), message, imageUri.toString(), new Date().getTime(), isMedia);
+            list.add(messageModel);
+            Stash.put(chatModel.getId(), list);
+            adapter.notifyItemInserted(list.size() - 1);
+            binding.chatRC.scrollToPosition(list.size() - 1);
+        }
     }
 
     @SuppressLint("RestrictedApi")
@@ -288,35 +247,37 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void deleteChat(boolean checked) {
-        Constants.databaseReference().child(Constants.CHATS).child(Constants.auth().getCurrentUser().getUid()).child(chatModel.getId()).removeValue()
-                .addOnSuccessListener(unused -> {
-                    if (checked) {
-                        Constants.databaseReference().child(Constants.CHATS).child(chatModel.getUserID()).child(chatModel.getId()).removeValue()
-                                .addOnSuccessListener(unused1 -> onBackPressed())
-                                .addOnFailureListener(e -> Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show());
-                    } else {
-                        onBackPressed();
-                    }
-                }).addOnFailureListener(e -> Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show());
+        Stash.clear(chatModel.getId());
+        ArrayList<ChatModel> list = Stash.getArrayList(Constants.USER, ChatModel.class);
+        int index = retrieveIndex(list);
+        list.remove(index);
+        Stash.put(Constants.USER, list);
+        Toast.makeText(this, "Chat Deleted", Toast.LENGTH_SHORT).show();
+        onBackPressed();
     }
 
-    private void clearHistory(boolean checked) {
-        Constants.databaseReference().child(Constants.MESSAGES).child(chatModel.getId()).child(Constants.auth().getCurrentUser().getUid()).removeValue()
-                .addOnSuccessListener(unused -> {
-                    chatModel.setLastMessage("History was cleared");
-                    chatModel.setTimestamp(new Date().getTime());
-                    Constants.databaseReference().child(Constants.CHATS).child(Constants.auth().getCurrentUser().getUid())
-                            .child(chatModel.getId()).setValue(chatModel);
-                }).addOnFailureListener(e -> Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show());
-        if (checked) {
-            UserModel userModel = (UserModel) Stash.getObject(Constants.STASH_USER, UserModel.class);
-            ChatModel receiver = new ChatModel(chatModel.getId(), userModel.getID(), userModel.getName(), userModel.getImage(), "History was cleared", new Date().getTime(), false);
-            Constants.databaseReference().child(Constants.MESSAGES).child(chatModel.getId()).child(chatModel.getUserID()).removeValue()
-                    .addOnSuccessListener(unused -> {
-                        Constants.databaseReference().child(Constants.CHATS).child(chatModel.getUserID())
-                                .child(chatModel.getId()).setValue(receiver);
-                    }).addOnFailureListener(e -> Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show());
+    private int retrieveIndex(ArrayList<ChatModel> list) {
+        for (int i = 0; i < list.size(); i++) {
+            ChatModel model = list.get(i);
+            if (model.getId().equals(chatModel.getId())) {
+                return i;
+            }
         }
+        return -1;
+    }
+
+
+    private void clearHistory(boolean checked) {
+        list.clear();
+        Stash.clear(chatModel.getId());
+        chatModel.setLastMessage("History was cleared");
+        chatModel.setTimestamp(new Date().getTime());
+        ArrayList<ChatModel> chatList = Stash.getArrayList(Constants.USER, ChatModel.class);
+        int index = retrieveIndex(chatList);
+        chatList.set(index, chatModel);
+        Stash.put(Constants.USER, chatList);
+        adapter = new MessageAdapter(this, list, chatModel.getName());
+        binding.chatRC.setAdapter(adapter);
     }
 
     private void searchList() {
@@ -374,6 +335,7 @@ public class ChatActivity extends AppCompatActivity {
         ImageView image = dialog.findViewById(R.id.image);
         EditText message = dialog.findViewById(R.id.message);
         MaterialCardView send = dialog.findViewById(R.id.send);
+        MaterialCardView receive = dialog.findViewById(R.id.receive);
         MaterialCardView back = dialog.findViewById(R.id.back);
         TextView name = dialog.findViewById(R.id.name);
 
@@ -384,26 +346,15 @@ public class ChatActivity extends AppCompatActivity {
 
         send.setOnClickListener(v -> {
             dialog.dismiss();
-            uploadImage(message.getText().toString().trim());
+            send(message.getText().toString(), true, "Photo");
+            imageUri = Uri.EMPTY;
+        });
+        receive.setOnClickListener(v -> {
+            dialog.dismiss();
+            receive(message.getText().toString(), true, "Photo");
+            imageUri = Uri.EMPTY;
         });
 
-    }
-
-    private void uploadImage(String s) {
-        Constants.showDialog();
-        String time = new SimpleDateFormat("ddMMyyyyHHmmss", Locale.getDefault()).format(new Date().getTime());
-        Constants.storageReference(Constants.auth().getCurrentUser().getUid()).child(Constants.MESSAGES).child(time)
-                .putFile(imageUri).addOnSuccessListener(taskSnapshot -> {
-                    Constants.dismissDialog();
-                    taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(uri -> {
-                        imageLink = uri.toString();
-                        String message = s.isEmpty() ? "Photo" : s;
-                        sendMessage(message, true);
-                    });
-                }).addOnFailureListener(e -> {
-                    Constants.dismissDialog();
-                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
     }
 
     @Override
@@ -415,6 +366,7 @@ public class ChatActivity extends AppCompatActivity {
             binding.searchView.setQuery("", false);
         } else {
             super.onBackPressed();
+            Stash.clear(Constants.PASS_CHAT);
         }
     }
 }

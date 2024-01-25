@@ -10,5 +10,7 @@
     <color name="text">#8A8E92</color>
     <color name="icon">#A1A6A5</color>
     <color name="text2">#C9E5FA</color>
+    <color name="transparent">#00C9E5FA</color>
+    <color name="red">#EC1919</color>
     <color name="sender_chat">#EDFEDA</color>
 </resources>

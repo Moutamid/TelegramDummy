@@ -1,16 +1,13 @@
 package com.moutamid.telegramdummy.utili;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.moutamid.telegramdummy.R;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
@@ -20,6 +17,7 @@ import android.view.Window;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,23 +40,6 @@ public class Constants {
     public static final String PASS_CHAT = "PASS_CHAT";
     public static final String STASH_USER = "STASH_USER";
     public static final String PASS_USER = "PASS_USER";
-    static Dialog dialog;
-    public static final String DATE_FORMAT = "dd/MM/yyyy";
-
-    public static String getFormattedDate(long date){
-        return new SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).format(date);
-    }
-
-    public static void initDialog(Context context, String message) {
-        dialog = new Dialog(context);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(R.layout.loading_dialog);
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-        dialog.setCancelable(false);
-
-        TextView text = dialog.findViewById(R.id.message);
-        text.setText(message);
-    }
 
     public static int getRandomColor() {
         int r = (int) (Math.random() * 256);
@@ -67,21 +48,13 @@ public class Constants {
         return Color.rgb(r, g, b);
     }
 
-    public static void showDialog(){
-        dialog.show();
-    }
-
-    public static void dismissDialog(){
-        dialog.dismiss();
-    }
-
-    public static boolean checkInternet(Context context) {
-        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivityManager != null) {
-            NetworkCapabilities networkCapabilities = connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
-            return networkCapabilities != null && networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+    public static boolean checkPermission(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return ContextCompat.checkSelfPermission(context, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED ||
+                    ContextCompat.checkSelfPermission(context, Manifest.permission.READ_MEDIA_VIDEO) == PackageManager.PERMISSION_GRANTED;
+        } else {
+            return ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
         }
-        return false;
     }
 
     public static void checkApp(Activity activity) {
@@ -139,20 +112,6 @@ public class Constants {
             }
 
         }).start();
-    }
-    public static FirebaseAuth auth() {
-        return FirebaseAuth.getInstance();
-    }
-
-    public static DatabaseReference databaseReference() {
-        DatabaseReference db = FirebaseDatabase.getInstance().getReference().child("telegramdummy");
-        db.keepSynced(true);
-        return db;
-    }
-
-    public static StorageReference storageReference(String auth) {
-        StorageReference sr = FirebaseStorage.getInstance().getReference().child("telegramdummy").child(auth);
-        return sr;
     }
 
     public static String getTime(long timestamp) {

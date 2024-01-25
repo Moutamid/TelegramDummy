@@ -1,25 +1,25 @@
 package com.moutamid.telegramdummy.models;
 
 public class UserModel {
-    String ID, username, name, number, image;
-
+    String ID, name, number, image;
+    int color;
     public UserModel() {
     }
 
-    public UserModel(String ID, String username, String name, String number, String image) {
+    public UserModel(String ID, String name, String number, String image, int color) {
         this.ID = ID;
-        this.username = username;
         this.name = name;
         this.number = number;
         this.image = image;
+        this.color = color;
     }
 
-    public String getUsername() {
-        return username;
+    public int getColor() {
+        return color;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setColor(int color) {
+        this.color = color;
     }
 
     public String getID() {

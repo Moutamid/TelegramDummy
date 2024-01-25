@@ -23,7 +23,6 @@ import com.avatarfirst.avatargenlib.AvatarGenerator;
 import com.bumptech.glide.Glide;
 import com.fxn.stash.Stash;
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.database.DataSnapshot;
 import com.moutamid.telegramdummy.R;
 import com.moutamid.telegramdummy.databinding.ActivityChatListBinding;
 import com.moutamid.telegramdummy.fragment.ChatFragment;
@@ -64,7 +63,6 @@ public class ChatListActivity extends AppCompatActivity implements NavigationVie
     @Override
     protected void onResume() {
         super.onResume();
-        Constants.initDialog(this, "Please Wait");
         updateNavHead();
     }
 
@@ -74,27 +72,25 @@ public class ChatListActivity extends AppCompatActivity implements NavigationVie
         TextView name = Header.findViewById(R.id.name);
         TextView phoneNumber = Header.findViewById(R.id.phoneNumber);
 
-        Constants.databaseReference().child(Constants.USER).child(Constants.auth().getCurrentUser().getUid())
-                .get().addOnSuccessListener(dataSnapshot -> {
-                    if (dataSnapshot.exists()) {
-                        UserModel userModel = dataSnapshot.getValue(UserModel.class);
-                        Stash.put(Constants.STASH_USER, userModel);
-                        name.setText(userModel.getName());
-                        phoneNumber.setText(userModel.getNumber());
-                        if (userModel.getImage().isEmpty()) {
-                            Glide.with(this).load(
-                                    new AvatarGenerator.AvatarBuilder(this)
-                                            .setLabel(userModel.getName().toUpperCase(Locale.ROOT))
-                                            .setAvatarSize(70)
-                                            .setBackgroundColor(Constants.getRandomColor())
-                                            .setTextSize(13)
-                                            .toCircle()
-                                            .build()
-                            ).into(profile);
-                        } else Glide.with(this).load(userModel.getImage()).into(profile);
-
-                    }
-                });
+        UserModel userModel = (UserModel) Stash.getObject(Constants.STASH_USER, UserModel.class);
+        String[] n = userModel.getName().split(" ");
+        String NAME = "";
+        if (n.length > 1) {
+            NAME = n[0].substring(0, 1) + n[1].substring(0, 1);
+        } else NAME = n[0].substring(0, 1);
+        name.setText(userModel.getName());
+        phoneNumber.setText(userModel.getNumber());
+        if (userModel.getImage().isEmpty()) {
+            Glide.with(this).load(
+                    new AvatarGenerator.AvatarBuilder(this)
+                            .setLabel(NAME.toUpperCase(Locale.ROOT))
+                            .setAvatarSize(70)
+                            .setBackgroundColor(userModel.getColor())
+                            .setTextSize(13)
+                            .toCircle()
+                            .build()
+            ).into(profile);
+        } else Glide.with(this).load(userModel.getImage()).into(profile);
 
     }
 
@@ -115,28 +111,13 @@ public class ChatListActivity extends AppCompatActivity implements NavigationVie
         MenuItem searchItem = menu.findItem(R.id.action_search);
         MenuItem action_add = menu.findItem(R.id.action_add);
         SearchView searchView = (SearchView) searchItem.getActionView();
-        android.widget.SearchView addView = (android.widget.SearchView) action_add.getActionView();
 
-        int searchImgId = getResources().getIdentifier("android:id/search_button", null, null);
-        ImageView v = (ImageView) addView.findViewById(searchImgId);
-        v.setImageResource(R.drawable.user_plus_solid);
-
-        addView.setQueryHint("Add Friend");
         searchView.setQueryHint("Search Chat");
 
-        addView.setOnQueryTextListener(new android.widget.SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                searchUser(query.trim());
-                addView.clearFocus();
-                MenuItemCompat.collapseActionView(action_add);
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
-            }
+        action_add.setOnMenuItemClickListener(item -> {
+            startActivity(new Intent(ChatListActivity.this, AddUserActivity.class));
+            finish();
+            return false;
         });
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -160,83 +141,6 @@ public class ChatListActivity extends AppCompatActivity implements NavigationVie
 
         return true;
     }
-
-    private void searchUser(String query) {
-        Constants.showDialog();
-        Constants.databaseReference().child(Constants.USER).get()
-                .addOnSuccessListener(dataSnapshot -> {
-                    Constants.dismissDialog();
-                    if (dataSnapshot.exists()) {
-                        boolean check = false;
-                        UserModel userModel = null;
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            userModel = snapshot.getValue(UserModel.class);
-                            if ((userModel.getUsername().equals(query) && !userModel.getID().equals(Constants.auth().getCurrentUser().getUid())) ||
-                                    userModel.getNumber().contains(query)
-                            ) {
-                                check = true;
-                                break;
-                            }
-                        }
-
-                        if (check) {
-                            ArrayList<ChatModel> list = Stash.getArrayList(Constants.CHAT_LIST, ChatModel.class);
-                            if (list.size() > 0) {
-                                boolean c = false;
-                                for (ChatModel model : list) {
-                                    if (userModel.getID().equals(model.getUserID())) {
-                                        c = true;
-                                        break;
-                                    }
-                                }
-
-                                if (c) {
-                                    Toast.makeText(this, "User already is in you chat list", Toast.LENGTH_SHORT).show();
-                                } else {
-                                    Stash.put(Constants.PASS_USER, userModel);
-                                    createChat(userModel);
-                                }
-
-                            } else {
-                                Stash.put(Constants.PASS_USER, userModel);
-                                createChat(userModel);
-                            }
-                        } else {
-                            Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show();
-                        }
-
-                    }
-                }).addOnFailureListener(e -> {
-                    Constants.dismissDialog();
-                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    private void createChat(UserModel userModel) {
-        Constants.initDialog(this, "Creating Chat with " + userModel.getName());
-        ChatModel chatModel = new ChatModel(UUID.randomUUID().toString(), userModel.getID(), userModel.getName(), userModel.getImage(), userModel.getName() + " joined Telegram", new Date().getTime(), false);
-        UserModel stashUser = (UserModel) Stash.getObject(Constants.STASH_USER, UserModel.class);
-        ChatModel receiver = new ChatModel(chatModel.getId(), stashUser.getID(), stashUser.getName(), stashUser.getImage(), stashUser.getName() + " joined Telegram", new Date().getTime(), false);
-        Constants.databaseReference().child(Constants.CHATS).child(Constants.auth().getCurrentUser().getUid())
-                .child(chatModel.getId()).setValue(chatModel)
-                .addOnSuccessListener(unused -> {
-                    Constants.databaseReference().child(Constants.CHATS).child(userModel.getID())
-                            .child(chatModel.getId()).setValue(receiver)
-                            .addOnSuccessListener(unused2 -> {
-                                Constants.dismissDialog();
-                                Stash.put(Constants.PASS_CHAT, chatModel);
-                                Toast.makeText(this, "Happy Chatting!", Toast.LENGTH_SHORT).show();
-                                startActivity(new Intent(this, ChatActivity.class));
-                            }).addOnFailureListener(e -> {
-                                Constants.dismissDialog();
-                                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                            });
-                }).addOnFailureListener(e -> {
-                    Constants.dismissDialog();
-                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
-    }
-
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {

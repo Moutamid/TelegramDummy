@@ -8,7 +8,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.Editable;
 import android.text.InputFilter;
+import android.text.TextWatcher;
 import android.text.method.DigitsKeyListener;
 import android.widget.Toast;
 
@@ -17,20 +19,23 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.avatarfirst.avatargenlib.AvatarGenerator;
 import com.bumptech.glide.Glide;
 import com.fxn.stash.Stash;
-import com.google.firebase.database.DataSnapshot;
+import com.moutamid.telegramdummy.MainActivity;
+import com.moutamid.telegramdummy.R;
 import com.moutamid.telegramdummy.databinding.ActivitySaveInformationBinding;
 import com.moutamid.telegramdummy.models.UserModel;
 import com.moutamid.telegramdummy.utili.Constants;
 
+import java.util.Locale;
 import java.util.UUID;
 
 public class SaveInformationActivity extends AppCompatActivity {
     private static final int PICK_IMAGE_REQUEST = 1001;
     ActivitySaveInformationBinding binding;
     String number;
-    Uri imageUri;
+    Uri imageUri = Uri.EMPTY;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,12 +45,10 @@ public class SaveInformationActivity extends AppCompatActivity {
 
         number = getIntent().getStringExtra("number");
 
-        binding.username.getEditText().requestFocus();
-
-      //  setEditTextFilters();
+        binding.back.setOnClickListener(v -> onBackPressed());
 
         binding.profile.setOnClickListener(v -> {
-            if (checkPermission()) {
+            if (Constants.checkPermission(this)) {
                 Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 startActivityForResult(Intent.createChooser(intent, "Pick Image"), PICK_IMAGE_REQUEST);
             } else {
@@ -69,118 +72,67 @@ public class SaveInformationActivity extends AppCompatActivity {
             }
         });
 
+        final int[] color = {Constants.getRandomColor()};
+
+        binding.firstname.getEditText().addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (imageUri == Uri.EMPTY) {
+                    if (!s.toString().isEmpty()) {
+                        binding.lastName.setEnabled(true);
+                        Glide.with(SaveInformationActivity.this)
+                                .load(
+                                        new AvatarGenerator.AvatarBuilder(SaveInformationActivity.this)
+                                                .setLabel(s.toString().trim().toUpperCase(Locale.ROOT))
+                                                .setAvatarSize(70)
+                                                .setBackgroundColor(color[0])
+                                                .setTextSize(13)
+                                                .toCircle()
+                                                .build()
+                                ).into(binding.profile);
+                    } else {
+                        binding.lastName.setEnabled(false);
+                        color[0] = Constants.getRandomColor();
+                        Glide.with(SaveInformationActivity.this).load(R.drawable.add_image).into(binding.profile);
+                    }
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
         binding.next.setOnClickListener(v -> {
-            binding.username.setErrorEnabled(false);
-            binding.firstname.setErrorEnabled(false);
-            if (binding.username.getEditText().getText().toString().isEmpty()) {
-                binding.username.setErrorEnabled(true);
-                binding.username.setError("Username is required");
-            } else if (binding.firstname.getEditText().getText().toString().isEmpty()) {
-                binding.firstname.setErrorEnabled(true);
-                binding.firstname.setError("First name is required");
+            if (binding.firstname.getEditText().getText().toString().isEmpty()){
+                Toast.makeText(this, "Firstname is required", Toast.LENGTH_SHORT).show();
             } else {
-                Constants.showDialog();
-                String username = binding.username.getEditText().getText().toString().trim();
-                checkUsername(username);
+                String name = binding.firstname.getEditText().getText().toString() + (binding.lastName.getEditText().getText().toString().isEmpty() ? "" : " " + binding.lastName.getEditText().getText().toString());
+                UserModel userModel = new UserModel(UUID.randomUUID().toString(), name.trim(), number, imageUri.toString(), color[0]);
+                Stash.put(Constants.STASH_USER, userModel);
+                startActivity(new Intent(this, ChatListActivity.class));
+                finish();
             }
         });
 
     }
 
-    public void setEditTextFilters() {
-        final String acceptedChars = "abcdefghijklmnopqrstuvwxyz0123456789._";
-
-        InputFilter inputFilter = (source, start, end, dest, dstart, dend) -> {
-            for (int i = start; i < end; i++) {
-                if (acceptedChars.indexOf(source.charAt(i)) == -1) {
-                    Toast.makeText(SaveInformationActivity.this, "You can't enter " + source.charAt(i), Toast.LENGTH_SHORT).show();
-                    return "";
-                }
-            }
-            return null;
-        };
-
-        DigitsKeyListener keyListener = DigitsKeyListener.getInstance(acceptedChars);
-
-        binding.username.getEditText().setFilters(new InputFilter[]{inputFilter});
-        binding.username.getEditText().setKeyListener(keyListener);
-    }
-
-
-    private void checkUsername(String username) {
-        Constants.databaseReference().child(Constants.USER).get()
-                .addOnSuccessListener(dataSnapshot -> {
-                    if (dataSnapshot.exists()) {
-                        boolean check = false;
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-                            UserModel userModel = snapshot.getValue(UserModel.class);
-                            if (userModel.getUsername().equals(username)){
-                                check = true;
-                                break;
-                            }
-                        }
-                        if (check){
-                            binding.username.setErrorEnabled(true);
-                            binding.username.setError("Username is not available");
-                            Toast.makeText(this, "Try a different username", Toast.LENGTH_SHORT).show();
-                        } else {
-                            if (imageUri != null) {
-                                uploadImage();
-                            } else uploadData("");
-                        }
-                    } else {
-                        if (imageUri != null) {
-                            uploadImage();
-                        } else uploadData("");
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Constants.dismissDialog();
-                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    private boolean checkPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED ||
-                    ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_VIDEO) == PackageManager.PERMISSION_GRANTED;
-        } else {
-            return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-        }
-    }
-
-    private void uploadData(String image) {
-        boolean b = !binding.lastName.getEditText().getText().toString().isEmpty();
-        String fullName = binding.firstname.getEditText().getText().toString().trim() + " " + binding.lastName.getEditText().getText().toString().trim();
-        String name = b ? fullName : binding.firstname.getEditText().getText().toString().trim();
-        UserModel userModel = new UserModel(Constants.auth().getCurrentUser().getUid(), binding.username.getEditText().getText().toString().trim(), name, number, image);
-        Constants.databaseReference().child(Constants.USER).child(userModel.getID()).setValue(userModel)
-                .addOnSuccessListener(unused -> {
-                    Constants.dismissDialog();
-                    startActivity(new Intent(SaveInformationActivity.this, ChatListActivity.class));
-                    finish();
-                }).addOnFailureListener(e -> {
-                    Constants.dismissDialog();
-                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    private void uploadImage() {
-        Constants.storageReference(Constants.auth().getCurrentUser().getUid()).child("profileImages").child(UUID.randomUUID().toString())
-                .putFile(imageUri).addOnSuccessListener(taskSnapshot -> {
-                    taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(uri -> {
-                        uploadData(uri.toString());
-                    });
-                }).addOnFailureListener(e -> {
-                    Constants.dismissDialog();
-                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
-        Constants.initDialog(this, "Creating your account");
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        startActivity(new Intent(this, MainActivity.class));
+        finish();
     }
 
     @Override

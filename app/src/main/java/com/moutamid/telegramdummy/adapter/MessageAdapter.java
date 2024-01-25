@@ -17,9 +17,11 @@ import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.fxn.stash.Stash;
 import com.google.android.material.card.MaterialCardView;
 import com.moutamid.telegramdummy.R;
 import com.moutamid.telegramdummy.models.MessageModel;
+import com.moutamid.telegramdummy.models.UserModel;
 import com.moutamid.telegramdummy.utili.Constants;
 
 import java.text.SimpleDateFormat;
@@ -117,7 +119,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     @Override
     public int getItemViewType(int position) {
         //get currently signed in user
-        return Constants.auth().getCurrentUser().getUid().equals(list.get(position).getSenderID()) ? MSG_TYPE_RIGHT : MSG_TYPE_LEFT;
+        UserModel userModel = (UserModel) Stash.getObject(Constants.STASH_USER, UserModel.class);
+        return userModel.getNumber().equals(list.get(position).getSenderID()) ? MSG_TYPE_RIGHT : MSG_TYPE_LEFT;
     }
 
     @Override

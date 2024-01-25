@@ -1,5 +1,6 @@
 package com.moutamid.telegramdummy.adapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
@@ -17,6 +18,7 @@ import com.bumptech.glide.Glide;
 import com.fxn.stash.Stash;
 import com.moutamid.telegramdummy.R;
 import com.moutamid.telegramdummy.activities.ChatActivity;
+import com.moutamid.telegramdummy.activities.EditContactActivity;
 import com.moutamid.telegramdummy.models.ChatModel;
 import com.moutamid.telegramdummy.utili.Constants;
 
@@ -30,11 +32,13 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatVH> implements Filterable {
 
     Context context;
+    Activity activity;
     ArrayList<ChatModel> list;
     ArrayList<ChatModel> listAll;
 
-    public ChatAdapter(Context context, ArrayList<ChatModel> list) {
+    public ChatAdapter(Context context, Activity activity, ArrayList<ChatModel> list) {
         this.context = context;
+        this.activity = activity;
         this.list = list;
         this.listAll = new ArrayList<>(list);
     }
@@ -52,17 +56,23 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatVH> implem
         holder.lastMessage.setText(model.getLastMessage());
         holder.time.setText(Constants.getTime(model.getTimestamp()));
         Glide.with(context).load(model.getImage()).placeholder(new AvatarGenerator.AvatarBuilder(context)
-                .setLabel(model.getName().toUpperCase(Locale.ROOT))
+                .setLabel(model.getName().trim().toUpperCase(Locale.ROOT))
                 .setAvatarSize(50)
-                .setBackgroundColor(Constants.getRandomColor())
+                .setBackgroundColor(model.getColor())
                 .setTextSize(14)
                 .toCircle()
                 .build()).into(holder.profile);
-
         holder.itemView.setOnClickListener(v -> {
             Stash.put(Constants.PASS_CHAT, model);
             context.startActivity(new Intent(context, ChatActivity.class));
         });
+
+        holder.profile.setOnClickListener(v -> {
+            Stash.put(Constants.PASS_USER, model);
+            context.startActivity(new Intent(context, EditContactActivity.class));
+            activity.finish();
+        });
+
     }
 
     @Override

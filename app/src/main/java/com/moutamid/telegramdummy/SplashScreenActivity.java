@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
+import com.fxn.stash.Stash;
 import com.moutamid.telegramdummy.activities.ChatListActivity;
+import com.moutamid.telegramdummy.models.UserModel;
 import com.moutamid.telegramdummy.utili.Constants;
 
 public class SplashScreenActivity extends AppCompatActivity {
@@ -17,7 +19,8 @@ public class SplashScreenActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash_screen);
 
         new Handler().postDelayed(() -> {
-            if (Constants.auth().getCurrentUser() != null ){
+            UserModel user = (UserModel) Stash.getObject(Constants.STASH_USER, UserModel.class);
+            if (user != null ) {
                 startActivity(new Intent(SplashScreenActivity.this, ChatListActivity.class));
                 finish();
             } else {

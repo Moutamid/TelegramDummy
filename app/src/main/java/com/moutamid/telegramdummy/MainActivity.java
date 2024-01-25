@@ -6,13 +6,12 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.hbb20.CountryCodePicker;
-import com.moutamid.telegramdummy.activities.OTPActivity;
+import com.moutamid.telegramdummy.activities.SaveInformationActivity;
 import com.moutamid.telegramdummy.databinding.ActivityMainBinding;
 import com.moutamid.telegramdummy.utili.Constants;
 
 public class MainActivity extends AppCompatActivity {
     ActivityMainBinding binding;
-    String verificationId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,19 +23,17 @@ public class MainActivity extends AppCompatActivity {
         String code = binding.countryPick.getSelectedCountryCodeWithPlus();
         binding.phoneNumber.getEditText().setText(code);
 
-        binding.countryPick.setOnCountryChangeListener(new CountryCodePicker.OnCountryChangeListener() {
-            @Override
-            public void onCountrySelected() {
-                String code = binding.countryPick.getSelectedCountryCodeWithPlus();
-                binding.phoneNumber.getEditText().setText(code);
-            }
+        binding.countryPick.setOnCountryChangeListener(() -> {
+            String code1 = binding.countryPick.getSelectedCountryCodeWithPlus();
+            binding.phoneNumber.getEditText().setText(code1);
         });
 
         binding.next.setOnClickListener(v -> {
             String number = binding.phoneNumber.getEditText().getText().toString().trim();
-            Intent intent = new Intent(MainActivity.this, OTPActivity.class);
+            Intent intent = new Intent(MainActivity.this, SaveInformationActivity.class);
             intent.putExtra("number", number);
             startActivity(intent);
+            finish();
         });
     }
 }

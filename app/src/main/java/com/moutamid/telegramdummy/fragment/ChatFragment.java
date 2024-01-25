@@ -12,9 +12,6 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.fxn.stash.Stash;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.ValueEventListener;
 import com.moutamid.telegramdummy.R;
 import com.moutamid.telegramdummy.adapter.ChatAdapter;
 import com.moutamid.telegramdummy.databinding.FragmentChatBinding;
@@ -22,6 +19,9 @@ import com.moutamid.telegramdummy.models.ChatModel;
 import com.moutamid.telegramdummy.utili.Constants;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class ChatFragment extends Fragment {
     FragmentChatBinding binding;
@@ -47,39 +47,14 @@ public class ChatFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        Constants.initDialog(requireContext(), "Please Wait");
         getChat();
     }
 
     private void getChat() {
-        Constants.showDialog();
-        Constants.databaseReference().child(Constants.CHATS).child(Constants.auth().getCurrentUser().getUid())
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        Constants.dismissDialog();
-                        if (snapshot.exists()){
-                            list.clear();
-                            for (DataSnapshot dataSnapshot : snapshot.getChildren()){
-                                ChatModel model = dataSnapshot.getValue(ChatModel.class);
-                                list.add(model);
-                            }
-                            adapter = new ChatAdapter(requireContext(), list);
-                            binding.chatRC.setAdapter(adapter);
-                        } else {
-                            list.clear();
-                            adapter = new ChatAdapter(requireContext(), list);
-                            binding.chatRC.setAdapter(adapter);
-                            Toast.makeText(requireContext(), "No Chat Found", Toast.LENGTH_SHORT).show();
-                        }
-                        Stash.put(Constants.CHAT_LIST, list);
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Constants.dismissDialog();
-                        Toast.makeText(requireContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
+        list = Stash.getArrayList(Constants.USER, ChatModel.class);
+        list.sort(Comparator.comparing(ChatModel::getTimestamp));
+        Collections.reverse(list);
+        adapter = new ChatAdapter(requireContext(), requireActivity(), list);
+        binding.chatRC.setAdapter(adapter);
     }
 }

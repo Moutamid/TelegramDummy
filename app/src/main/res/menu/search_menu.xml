@@ -13,8 +13,6 @@
         android:id="@+id/action_add"
         android:title="Add Friend"
         android:icon="@drawable/user_plus_solid"
-        app:queryHint="Add Friend"
         android:iconTint="@color/white"
-        app:actionViewClass="android.widget.SearchView"
         app:showAsAction="always" />
 </menu>
