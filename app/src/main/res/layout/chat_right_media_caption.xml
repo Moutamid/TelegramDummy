@@ -6,24 +6,49 @@
     android:layout_height="wrap_content"
     android:layout_marginTop="5dp">
 
-    <TextView
-        android:id="@+id/message"
+    <LinearLayout
+        android:id="@+id/layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="50dp"
-        android:layout_marginEnd="5dp"
         android:background="@drawable/outgoing_bubble"
-        android:paddingStart="12dp"
-        android:paddingTop="8dp"
-        android:paddingEnd="65dp"
-        android:paddingBottom="8dp"
-        android:text="Hi"
-        android:textColor="@android:color/black"
         app:layout_constrainedWidth="true"
+        android:layout_marginEnd="5dp"
         app:layout_constraintEnd_toStartOf="@+id/marginSpacer_beforeMessage"
         app:layout_constraintHorizontal_bias="1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:orientation="vertical">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/image"
+            android:layout_width="250dp"
+            android:layout_height="400dp"
+            android:layout_margin="4dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp">
+
+            <ImageView
+                android:id="@+id/photo"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@color/green"
+                android:scaleType="centerCrop" />
+
+        </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:id="@+id/message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="12dp"
+            android:paddingTop="0dp"
+            android:paddingEnd="65dp"
+            android:paddingBottom="8dp"
+            android:text="@string/lorem"
+            android:textColor="@android:color/black" />
+
+    </LinearLayout>
+
 
     <Space
         android:id="@+id/marginSpacer_beforeMessage"
@@ -52,33 +77,26 @@
         android:id="@+id/time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="22dp"
         android:layout_marginBottom="3dp"
+        android:layout_marginEnd="22dp"
         android:maxLines="1"
         android:text="4:42 pm"
         android:textAllCaps="true"
-        android:textColor="@color/green"
         android:textSize="12sp"
+        android:textColor="@color/green"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/message" />
+        app:layout_constraintEnd_toEndOf="@+id/layout" />
 
     <ImageView
         android:id="@+id/check"
         android:layout_width="15dp"
         android:layout_height="15dp"
-        android:layout_marginBottom="2dp"
+        android:layout_marginBottom="3dp"
         android:layout_marginEnd="4dp"
         android:src="@drawable/check"
         app:tint="@color/green"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/message" />
+        app:layout_constraintEnd_toEndOf="@+id/layout" />
 
-
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/photo"
-        android:visibility="gone"
-        tools:ignore="MissingConstraints" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

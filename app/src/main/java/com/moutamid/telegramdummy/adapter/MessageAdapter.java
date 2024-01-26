@@ -20,6 +20,7 @@ import com.bumptech.glide.Glide;
 import com.fxn.stash.Stash;
 import com.google.android.material.card.MaterialCardView;
 import com.moutamid.telegramdummy.R;
+import com.moutamid.telegramdummy.models.ChatModel;
 import com.moutamid.telegramdummy.models.MessageModel;
 import com.moutamid.telegramdummy.models.UserModel;
 import com.moutamid.telegramdummy.utili.Constants;
@@ -35,6 +36,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     String name;
     private static final int MSG_TYPE_LEFT = 0;
     private static final int MSG_TYPE_RIGHT = 1;
+    private static final int MSG_TYPE_RIGHT_MEDIA = 2;
+    private static final int MSG_TYPE_LEFT_MEDIA = 3;
+    private static final int MSG_TYPE_RIGHT_MEDIA_CAPTION = 4;
+    private static final int MSG_TYPE_LEFT_MEDIA_CAPTION = 5;
 
     public MessageAdapter(Context context, ArrayList<MessageModel> list, String name) {
         this.context = context;
@@ -48,8 +53,16 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         View view;
         if (viewType == MSG_TYPE_LEFT) {
             view = LayoutInflater.from(context).inflate(R.layout.chat_left, parent, false);
-        } else {
+        } else if (viewType == MSG_TYPE_RIGHT) {
             view = LayoutInflater.from(context).inflate(R.layout.chat_right, parent, false);
+        } else if (viewType == MSG_TYPE_RIGHT_MEDIA) {
+            view = LayoutInflater.from(context).inflate(R.layout.chat_right_media, parent, false);
+        }  else if (viewType == MSG_TYPE_LEFT_MEDIA) {
+            view = LayoutInflater.from(context).inflate(R.layout.chat_left_media, parent, false);
+        } else if (viewType == MSG_TYPE_RIGHT_MEDIA_CAPTION) {
+            view = LayoutInflater.from(context).inflate(R.layout.chat_right_media_caption, parent, false);
+        }  else {
+            view = LayoutInflater.from(context).inflate(R.layout.chat_left_media_caption, parent, false);
         }
         return new MessageVH(view);
     }
@@ -57,21 +70,28 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     @Override
     public void onBindViewHolder(@NonNull MessageVH holder, int position) {
         MessageModel model = list.get(holder.getAbsoluteAdapterPosition());
-        holder.message.setText(model.getMessage());
-        if (model.isMedia()) {
-            if (model.getMessage().equals("Photo")) {
-                holder.message.setVisibility(View.GONE);
-            }
-            holder.image.setVisibility(View.VISIBLE);
-            Glide.with(context).load(model.getImage()).placeholder(R.color.black).into(holder.imageView);
 
-            holder.image.setOnClickListener(v -> {
-                openViewer(holder.getAbsoluteAdapterPosition());
-            });
-
+        ChatModel chatModel = (ChatModel) Stash.getObject(Constants.PASS_CHAT, ChatModel.class);
+        String status = chatModel.getStatus();
+        if (status.equalsIgnoreCase("online")) {
+            holder.check.setImageResource(R.drawable.check);
+        } else if (status.equalsIgnoreCase("typing...")) {
+            holder.check.setImageResource(R.drawable.check);
+        } else if (status.startsWith("last seen")) {
+            holder.check.setImageResource(R.drawable.round_check_24);
+        } else {
+            holder.check.setImageResource(R.drawable.round_check_24);
         }
+
+        holder.message.setText(model.getMessage());
+        Glide.with(context).load(model.getImage()).placeholder(R.color.black).into(holder.imageView);
         String time = new SimpleDateFormat("hh:mm aa", Locale.getDefault()).format(model.getTimestamp());
         holder.time.setText(time);
+
+        if (model.isMedia()){
+            holder.imageView.setOnClickListener(v -> openViewer(holder.getAbsoluteAdapterPosition()));
+        }
+
     }
 
     private void openViewer(int pos) {
@@ -120,7 +140,27 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     public int getItemViewType(int position) {
         //get currently signed in user
         UserModel userModel = (UserModel) Stash.getObject(Constants.STASH_USER, UserModel.class);
-        return userModel.getNumber().equals(list.get(position).getSenderID()) ? MSG_TYPE_RIGHT : MSG_TYPE_LEFT;
+        if (userModel.getNumber().equals(list.get(position).getSenderID())){
+            if (list.get(position).isMedia()){
+                if (!list.get(position).getMessage().isEmpty()){
+                   return MSG_TYPE_RIGHT_MEDIA_CAPTION;
+                } else {
+                    return MSG_TYPE_RIGHT_MEDIA;
+                }
+            } else {
+                return MSG_TYPE_RIGHT;
+            }
+        } else {
+            if (list.get(position).isMedia()){
+                if (!list.get(position).getMessage().isEmpty()){
+                    return MSG_TYPE_LEFT_MEDIA_CAPTION;
+                } else {
+                    return MSG_TYPE_LEFT_MEDIA;
+                }
+            } else {
+                return MSG_TYPE_LEFT;
+            }
+        }
     }
 
     @Override
@@ -130,15 +170,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     public class MessageVH extends RecyclerView.ViewHolder {
         TextView message, time;
-        ImageView imageView;
-        CardView image;
+        ImageView imageView, check;
 
         public MessageVH(@NonNull View itemView) {
             super(itemView);
             message = itemView.findViewById(R.id.message);
             time = itemView.findViewById(R.id.time);
-            image = itemView.findViewById(R.id.image);
-            imageView = itemView.findViewById(R.id.imageView);
+            imageView = itemView.findViewById(R.id.photo);
+            check = itemView.findViewById(R.id.check);
         }
     }
 
