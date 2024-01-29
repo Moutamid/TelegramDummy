@@ -17,7 +17,7 @@
         android:paddingTop="8dp"
         android:paddingEnd="65dp"
         android:paddingBottom="8dp"
-        android:text="Hi"
+        android:text="Hi wassup how you doing"
         android:textColor="@android:color/black"
         app:layout_constrainedWidth="true"
         app:layout_constraintEnd_toStartOf="@+id/marginSpacer_beforeMessage"

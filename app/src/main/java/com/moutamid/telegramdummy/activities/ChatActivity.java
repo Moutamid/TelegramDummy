@@ -98,8 +98,9 @@ public class ChatActivity extends AppCompatActivity {
             startActivityForResult(Intent.createChooser(intent, "Pick Image"), PICK_IMAGE_REQUEST);
         });
 
-        binding.send.setOnClickListener(v -> send(binding.message.getText().toString(), false, binding.message.getText().toString()));
-        binding.receive.setOnClickListener(v -> receive(binding.message.getText().toString(), false, binding.message.getText().toString()));
+        // IMPORTANT : "\t\t\t" these are important to add the space at the end of the message for UI
+        binding.send.setOnClickListener(v -> send(binding.message.getText().toString() + "\t\t\t", false, binding.message.getText().toString()));
+        binding.receive.setOnClickListener(v -> receive(binding.message.getText().toString() + "\t\t", false, binding.message.getText().toString()));
 
         binding.camera.setOnClickListener(v -> openCamera());
 
@@ -345,14 +346,16 @@ public class ChatActivity extends AppCompatActivity {
 
         Glide.with(this).load(imageUri).into(image);
 
+
+        // IMPORTANT : "\t\t\t" these are important to add the space at the end of the message for UI
         send.setOnClickListener(v -> {
             dialog.dismiss();
-            send(message.getText().toString(), true, "Photo");
+            send(message.getText().toString() + "\t\t\t", true, "Photo");
             imageUri = Uri.EMPTY;
         });
         receive.setOnClickListener(v -> {
             dialog.dismiss();
-            receive(message.getText().toString(), true, "Photo");
+            receive(message.getText().toString() + "\t\t\t", true, "Photo");
             imageUri = Uri.EMPTY;
         });
 

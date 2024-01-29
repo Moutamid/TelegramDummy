@@ -10,6 +10,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
+        android:layout_above="@id/editText"
+        android:layout_below="@id/toolbar"
         android:src="@drawable/chat_bg" />
 
     <com.google.android.material.card.MaterialCardView
@@ -133,10 +135,10 @@
         android:id="@+id/chatRC"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_above="@id/editText"
         android:layout_below="@id/toolbar"
         android:padding="10dp"
-        tools:listitem="@layout/chat_right"
-        android:layout_above="@id/editText" />
+        tools:listitem="@layout/chat_right" />
 
     <LinearLayout
         android:id="@+id/editText"
