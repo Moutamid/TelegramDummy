@@ -31,6 +31,7 @@ import com.fxn.stash.Stash;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.checkbox.MaterialCheckBox;
+import com.google.android.material.datepicker.MaterialDatePicker;
 import com.moutamid.telegramdummy.R;
 import com.moutamid.telegramdummy.adapter.MessageAdapter;
 import com.moutamid.telegramdummy.databinding.ActivityChatBinding;
@@ -159,7 +160,7 @@ public class ChatActivity extends AppCompatActivity {
             int index = retrieveIndex(chatList);
             chatList.set(index, chatModel);
             Stash.put(Constants.USER, chatList);
-            MessageModel messageModel = new MessageModel(UUID.randomUUID().toString(), chatModel.getId(), message, imageUri.toString(), new Date().getTime(), isMedia);
+            MessageModel messageModel = new MessageModel(UUID.randomUUID().toString(), chatModel.getId(), message, imageUri.toString(), new Date().getTime(), isMedia, false);
             list.add(messageModel);
             Stash.put(chatModel.getId(), list);
             adapter.notifyItemInserted(list.size() - 1);
@@ -177,7 +178,7 @@ public class ChatActivity extends AppCompatActivity {
             chatList.set(index, chatModel);
             Stash.put(Constants.USER, chatList);
             UserModel userModel = (UserModel) Stash.getObject(Constants.STASH_USER, UserModel.class);
-            MessageModel messageModel = new MessageModel(UUID.randomUUID().toString(), userModel.getNumber(), message, imageUri.toString(), new Date().getTime(), isMedia);
+            MessageModel messageModel = new MessageModel(UUID.randomUUID().toString(), userModel.getNumber(), message, imageUri.toString(), new Date().getTime(), isMedia, false);
             list.add(messageModel);
             Stash.put(chatModel.getId(), list);
             adapter.notifyItemInserted(list.size() - 1);
@@ -200,12 +201,30 @@ public class ChatActivity extends AppCompatActivity {
             } else if (itemId == R.id.delete) {
                 showDeleteDialog(false);
                 return true;
+            } else if (itemId == R.id.add) {
+                addDate();
+                return true;
             }
             return false;
         });
         MenuPopupHelper menuHelper = new MenuPopupHelper(this, (MenuBuilder) popupMenu.getMenu(), binding.menu);
         menuHelper.setForceShowIcon(true);
         menuHelper.show();
+    }
+
+    private void addDate() {
+        MaterialDatePicker.Builder<Long> builder = MaterialDatePicker.Builder.datePicker();
+        builder.setTitleText("Select a Date");
+        final MaterialDatePicker<Long> datePicker = builder.build();
+        datePicker.addOnPositiveButtonClickListener(selection -> {
+            datePicker.dismiss();
+            list.add(new MessageModel("","","","",selection, false, true));
+            adapter = new MessageAdapter(this, list, chatModel.getName());
+            binding.chatRC.setAdapter(adapter);
+            binding.chatRC.scrollToPosition(list.size() - 1);
+            Stash.put(chatModel.getId(), list);
+        });
+        datePicker.show(getSupportFragmentManager(), datePicker.toString());
     }
 
     private void showDeleteDialog(boolean isClear) {
@@ -278,8 +297,7 @@ public class ChatActivity extends AppCompatActivity {
         int index = retrieveIndex(chatList);
         chatList.set(index, chatModel);
         Stash.put(Constants.USER, chatList);
-        adapter = new MessageAdapter(this, list, chatModel.getName());
-        binding.chatRC.setAdapter(adapter);
+        getMessages();
     }
 
     private void searchList() {

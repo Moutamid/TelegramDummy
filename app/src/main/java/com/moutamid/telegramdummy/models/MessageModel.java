@@ -3,18 +3,27 @@ package com.moutamid.telegramdummy.models;
 public class MessageModel {
     String id, senderID, message, image;
     long timestamp;
-    boolean isMedia;
+    boolean isMedia, isDate;
 
     public MessageModel() {
     }
 
-    public MessageModel(String id, String senderID, String message, String image, long timestamp, boolean isMedia) {
+    public MessageModel(String id, String senderID, String message, String image, long timestamp, boolean isMedia, boolean isDate) {
         this.id = id;
         this.senderID = senderID;
         this.message = message;
         this.image = image;
         this.timestamp = timestamp;
         this.isMedia = isMedia;
+        this.isDate = isDate;
+    }
+
+    public boolean isDate() {
+        return isDate;
+    }
+
+    public void setDate(boolean date) {
+        isDate = date;
     }
 
     public String getImage() {

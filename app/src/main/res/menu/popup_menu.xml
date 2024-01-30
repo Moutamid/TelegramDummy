@@ -5,15 +5,24 @@
         android:id="@+id/search"
         android:icon="@drawable/magnifying_glass_solid"
         app:showAsAction="always"
+        android:iconTint="@color/black"
         android:title="Search" />
+    <item
+        android:id="@+id/add"
+        android:icon="@drawable/round_calendar_month_24"
+        app:showAsAction="always"
+        android:iconTint="@color/black"
+        android:title="Add Date" />
     <item
         android:id="@+id/clear"
         android:icon="@drawable/broom"
+        android:iconTint="@color/black"
         app:showAsAction="always"
         android:title="Clear History" />
     <item
         android:id="@+id/delete"
         android:icon="@drawable/trash"
+        android:iconTint="@color/black"
         app:showAsAction="always"
         android:title="Delete Chat" />
 </menu>
