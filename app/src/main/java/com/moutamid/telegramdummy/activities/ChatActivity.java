@@ -41,6 +41,7 @@ import com.moutamid.telegramdummy.models.UserModel;
 import com.moutamid.telegramdummy.utili.Constants;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
@@ -72,7 +73,7 @@ public class ChatActivity extends AppCompatActivity {
         binding.status.setText(chatModel.getStatus());
 
         binding.chatRC.setHasFixedSize(false);
-        binding.chatRC.setLayoutManager(new LinearLayoutManager(this));
+        binding.chatRC.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
 
         Glide.with(this).load(chatModel.getImage()).placeholder(new AvatarGenerator.AvatarBuilder(this)
                 .setLabel(chatModel.getName().toUpperCase(Locale.ROOT))
