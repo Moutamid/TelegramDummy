@@ -42,8 +42,7 @@
             android:layout_height="wrap_content"
             android:paddingStart="12dp"
             android:paddingTop="0dp"
-            android:paddingEnd="65dp"
-            android:paddingBottom="8dp"
+            android:paddingBottom="20dp"
             android:text="@string/lorem"
             android:textColor="@android:color/black" />
 
@@ -59,16 +58,16 @@
 
     <ImageView
         android:id="@+id/message_tail"
-        android:layout_width="14dp"
-        android:layout_height="13dp"
-        android:layout_marginEnd="3dp"
+        android:layout_width="10dp"
+        android:layout_height="9dp"
+        android:layout_marginEnd="6dp"
         android:src="@drawable/tail"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/marginSpacer_beforeMessage" />
 
     <ImageView
-        android:layout_width="10dp"
-        android:layout_height="10dp"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
         android:src="@drawable/green_square"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/message_tail" />
@@ -79,6 +78,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="3dp"
         android:layout_marginEnd="22dp"
+        android:layout_marginTop="5dp"
         android:maxLines="1"
         android:text="4:42 pm"
         android:textAllCaps="true"

@@ -34,16 +34,16 @@
 
     <ImageView
         android:id="@+id/message_tail"
-        android:layout_width="14dp"
-        android:layout_height="13dp"
-        android:layout_marginEnd="3dp"
+        android:layout_width="10dp"
+        android:layout_height="9dp"
+        android:layout_marginEnd="6dp"
         android:src="@drawable/tail"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/marginSpacer_beforeMessage" />
 
     <ImageView
-        android:layout_width="10dp"
-        android:layout_height="10dp"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
         android:src="@drawable/green_square"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/message_tail" />
