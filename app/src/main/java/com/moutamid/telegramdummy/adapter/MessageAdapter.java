@@ -24,6 +24,7 @@ import com.moutamid.telegramdummy.models.ChatModel;
 import com.moutamid.telegramdummy.models.MessageModel;
 import com.moutamid.telegramdummy.models.UserModel;
 import com.moutamid.telegramdummy.utili.Constants;
+import com.moutamid.telegramdummy.utili.DeleteListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     Context context;
     ArrayList<MessageModel> list;
     String name;
+    DeleteListener deleteListener;
     private static final int MSG_TYPE_LEFT = 0;
     private static final int MSG_TYPE_RIGHT = 1;
     private static final int MSG_TYPE_RIGHT_MEDIA = 2;
@@ -42,10 +44,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private static final int MSG_TYPE_LEFT_MEDIA_CAPTION = 5;
     private static final int DATE_TYPE = 6;
 
-    public MessageAdapter(Context context, ArrayList<MessageModel> list, String name) {
+    public MessageAdapter(Context context, ArrayList<MessageModel> list, String name, DeleteListener deleteListener) {
         this.context = context;
         this.list = list;
         this.name = name;
+        this.deleteListener = deleteListener;
     }
 
     @NonNull
@@ -99,6 +102,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         if (model.isMedia()){
             holder.imageView.setOnClickListener(v -> openViewer(holder.getAbsoluteAdapterPosition()));
         }
+
+        holder.itemView.setOnLongClickListener(v -> {
+            deleteListener.onHoldClick(list.get(holder.getAbsoluteAdapterPosition()));
+            return true;
+        });
 
     }
 

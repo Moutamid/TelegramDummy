@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/outgoing_bubble"
         app:layout_constrainedWidth="true"
-        android:layout_marginEnd="5dp"
+        android:layout_marginEnd="7dp"
         app:layout_constraintEnd_toStartOf="@+id/marginSpacer_beforeMessage"
         app:layout_constraintHorizontal_bias="1"
         app:layout_constraintStart_toStartOf="parent"
@@ -43,7 +43,7 @@
             android:paddingStart="12dp"
             android:paddingTop="0dp"
             android:paddingBottom="20dp"
-            android:text="@string/lorem"
+            android:text="hi wassup how are you doing food"
             android:textColor="@android:color/black" />
 
     </LinearLayout>
@@ -51,23 +51,22 @@
 
     <Space
         android:id="@+id/marginSpacer_beforeMessage"
-        android:layout_width="10dp"
-        android:layout_height="10dp"
+        android:layout_width="4dp"
+        android:layout_height="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <ImageView
         android:id="@+id/message_tail"
-        android:layout_width="10dp"
-        android:layout_height="9dp"
-        android:layout_marginEnd="6dp"
+        android:layout_width="14dp"
+        android:layout_height="13dp"
         android:src="@drawable/tail"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/marginSpacer_beforeMessage" />
 
     <ImageView
-        android:layout_width="8dp"
-        android:layout_height="8dp"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
         android:src="@drawable/green_square"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/message_tail" />

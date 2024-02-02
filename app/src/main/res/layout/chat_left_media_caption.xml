@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/incoming_bubble"
         app:layout_constrainedWidth="true"
-        android:layout_marginStart="5dp"
+        android:layout_marginStart="7dp"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/marginSpacer_beforeMessage"
@@ -50,16 +50,15 @@
 
     <Space
         android:id="@+id/marginSpacer_beforeMessage"
-        android:layout_width="10dp"
-        android:layout_height="10dp"
+        android:layout_width="4dp"
+        android:layout_height="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView
         android:id="@+id/message_tail"
-        android:layout_width="10dp"
-        android:layout_height="9dp"
-        android:layout_marginStart="5.5dp"
+        android:layout_width="14dp"
+        android:layout_height="13dp"
         android:rotation="270"
         android:scaleType="centerCrop"
         android:src="@drawable/tail"
@@ -69,9 +68,8 @@
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="8dp"
-        android:layout_height="8dp"
-        android:layout_marginStart="6dp"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
         android:src="@drawable/green_square"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/message_tail"

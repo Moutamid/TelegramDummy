@@ -157,6 +157,7 @@
         android:layout_height="match_parent"
         android:layout_above="@id/editText"
         android:layout_below="@id/toolbar"
+        android:paddingHorizontal="3dp"
         android:paddingBottom="8dp"
         tools:listitem="@layout/chat_right" />
 

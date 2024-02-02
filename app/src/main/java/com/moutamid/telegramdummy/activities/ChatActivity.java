@@ -1,5 +1,7 @@
 package com.moutamid.telegramdummy.activities;
 
+import static com.moutamid.telegramdummy.utili.Constants.TAG;
+
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Intent;
@@ -9,6 +11,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -39,9 +42,9 @@ import com.moutamid.telegramdummy.models.ChatModel;
 import com.moutamid.telegramdummy.models.MessageModel;
 import com.moutamid.telegramdummy.models.UserModel;
 import com.moutamid.telegramdummy.utili.Constants;
+import com.moutamid.telegramdummy.utili.DeleteListener;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
@@ -147,7 +150,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void getMessages() {
         list = Stash.getArrayList(chatModel.getId(), MessageModel.class);
-        adapter = new MessageAdapter(this, list, chatModel.getName());
+        adapter = new MessageAdapter(this, list, chatModel.getName(), deleteListener);
         binding.chatRC.setAdapter(adapter);
         binding.chatRC.scrollToPosition(list.size() - 1);
     }
@@ -219,8 +222,8 @@ public class ChatActivity extends AppCompatActivity {
         final MaterialDatePicker<Long> datePicker = builder.build();
         datePicker.addOnPositiveButtonClickListener(selection -> {
             datePicker.dismiss();
-            list.add(new MessageModel("","","","",selection, false, true));
-            adapter = new MessageAdapter(this, list, chatModel.getName());
+            list.add(new MessageModel(UUID.randomUUID().toString(), "", "", "", selection, false, true));
+            adapter = new MessageAdapter(this, list, chatModel.getName(), deleteListener);
             binding.chatRC.setAdapter(adapter);
             binding.chatRC.scrollToPosition(list.size() - 1);
             Stash.put(chatModel.getId(), list);
@@ -288,6 +291,57 @@ public class ChatActivity extends AppCompatActivity {
         return -1;
     }
 
+    DeleteListener deleteListener = new DeleteListener() {
+        @Override
+        public void onHoldClick(MessageModel messageModel) {
+            Dialog dialog = new Dialog(ChatActivity.this);
+            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            dialog.setContentView(R.layout.delete_dialog);
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+            dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialog.setCancelable(true);
+            dialog.show();
+
+            TextView heading = dialog.findViewById(R.id.heading);
+            TextView message = dialog.findViewById(R.id.message);
+            MaterialCheckBox check = dialog.findViewById(R.id.check);
+            MaterialButton cancel = dialog.findViewById(R.id.cancel);
+            MaterialButton delete = dialog.findViewById(R.id.delete);
+
+
+            heading.setText("Delete Message");
+            message.setText("Are you sure you want to delete this message?");
+            check.setText("Also delete for " + chatModel.getName());
+            delete.setText("Delete");
+
+            cancel.setOnClickListener(v -> dialog.dismiss());
+
+            delete.setOnClickListener(v -> {
+                dialog.dismiss();
+                deleteMessage(messageModel);
+            });
+
+        }
+    };
+
+    private void deleteMessage(MessageModel messageModel) {
+        int i = retrievePosition(list, messageModel.getId());
+        Log.d(TAG, "deleteMessage: " + messageModel.getId());
+        Log.d(TAG, "deleteMessage: " + i);
+        if (i != -1){
+            list.remove(i);
+            adapter.notifyItemRemoved(i);
+            Stash.put(chatModel.getId(), list);
+
+            chatModel.setLastMessage("Message Deleted");
+            chatModel.setTimestamp(new Date().getTime());
+            ArrayList<ChatModel> chatList = Stash.getArrayList(Constants.USER, ChatModel.class);
+            int index = retrieveIndex(chatList);
+            chatList.set(index, chatModel);
+            Stash.put(Constants.USER, chatList);
+
+        }
+    }
 
     private void clearHistory(boolean checked) {
         list.clear();
@@ -329,6 +383,15 @@ public class ChatActivity extends AppCompatActivity {
         for (int index = 0; index < modelList.size(); index++) {
             MessageModel model = modelList.get(index);
             if (model.getMessage().contains(searchMessage)) {
+                return index;
+            }
+        }
+        return -1;
+    }
+    public static int retrievePosition(ArrayList<MessageModel> modelList, String id) {
+        for (int index = 0; index < modelList.size(); index++) {
+            MessageModel model = modelList.get(index);
+            if (model.getId().equals(id)) {
                 return index;
             }
         }
