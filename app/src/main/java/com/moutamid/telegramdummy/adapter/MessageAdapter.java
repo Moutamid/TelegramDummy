@@ -147,7 +147,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         }
         PagerSnapHelper snapHelper = new PagerSnapHelper();
         snapHelper.attachToRecyclerView(recyclerView);
-        ImageAdapter adapter = new ImageAdapter(context, imageList);
+        ImageAdapter adapter = new ImageAdapter(context, imageList, () -> {
+            dialog.dismiss();
+        });
         recyclerView.setAdapter(adapter);
         recyclerView.scrollToPosition(i);
     }
