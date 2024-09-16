@@ -84,4 +84,18 @@ public class ChatModel {
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
+
+    @Override
+    public String toString() {
+        return "ChatModel{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", image='" + image + '\'' +
+                ", lastMessage='" + lastMessage + '\'' +
+                ", code=" + code +
+                ", timestamp=" + timestamp +
+                ", status='" + status + '\'' +
+                ", color=" + color +
+                '}';
+    }
 }

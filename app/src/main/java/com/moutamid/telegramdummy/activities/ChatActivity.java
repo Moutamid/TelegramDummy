@@ -150,6 +150,72 @@ public class ChatActivity extends AppCompatActivity {
 
     private void getMessages() {
         list = Stash.getArrayList(chatModel.getId(), MessageModel.class);
+        for (MessageModel model : list) {
+            Log.d(TAG, "getChat: " + model.toString());
+        }
+        if (list.isEmpty()) {
+            UserModel userModel = (UserModel) Stash.getObject(Constants.STASH_USER, UserModel.class);
+            list.add(new MessageModel(
+                    "bc0bd0cb-8499-40ab-a3c9-ccb7ed715c10",
+                    userModel.getNumber(),
+                    "Hii\t\t\t",
+                    "",
+                    1726469627444L,
+                    false,
+                    false
+            ));
+
+            list.add(new MessageModel(
+                    "150d1b50-1c64-411b-9c1f-5bc952625431",
+                    userModel.getNumber(),
+                    "How you doing\t\t\t",
+                    "",
+                    1726469633253L,
+                    false,
+                    false
+            ));
+
+            list.add(new MessageModel(
+                    "969867cb-9cb2-422b-903d-8004bbfd9bbf",
+                    "+123456789",
+                    "Hiii\t\t",
+                    "",
+                    1726469636998L,
+                    false,
+                    false
+            ));
+
+            list.add(new MessageModel(
+                    "6bd57663-9257-473c-ad3c-790918d66288",
+                    "+123456789",
+                    "I am fine, How are you\t\t",
+                    "",
+                    1726469647566L,
+                    false,
+                    false
+            ));
+
+            list.add(new MessageModel(
+                    "157f6a38-13a9-41ec-83cd-c37e4f91547f",
+                    userModel.getNumber(),
+                    "Good\t\t\t",
+                    "",
+                    1726469652484L,
+                    false,
+                    false
+            ));
+
+            list.add(new MessageModel(
+                    "bc044155-b477-4e4b-9066-a40ec23ea3c4",
+                    "",
+                    "",
+                    "",
+                    1726531200000L,
+                    false,
+                    true
+            ));
+            Stash.put(chatModel.getId(), list);
+        }
         adapter = new MessageAdapter(this, list, chatModel.getName(), deleteListener);
         binding.chatRC.setAdapter(adapter);
         binding.chatRC.scrollToPosition(list.size() - 1);
@@ -328,7 +394,7 @@ public class ChatActivity extends AppCompatActivity {
         int i = retrievePosition(list, messageModel.getId());
         Log.d(TAG, "deleteMessage: " + messageModel.getId());
         Log.d(TAG, "deleteMessage: " + i);
-        if (i != -1){
+        if (i != -1) {
             list.remove(i);
             adapter.notifyItemRemoved(i);
             Stash.put(chatModel.getId(), list);
@@ -388,6 +454,7 @@ public class ChatActivity extends AppCompatActivity {
         }
         return -1;
     }
+
     public static int retrievePosition(ArrayList<MessageModel> modelList, String id) {
         for (int index = 0; index < modelList.size(); index++) {
             MessageModel model = modelList.get(index);

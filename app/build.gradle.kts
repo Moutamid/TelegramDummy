@@ -33,7 +33,7 @@ android {
 }
 
 dependencies {
-    implementation("com.fxn769:stash:1.3.2")
+    implementation("com.github.akshay2211:Stash:1c45b0e5d5")
     implementation("com.github.amoskorir:avatarimagegenerator:1.5.0")
 
     implementation("com.hbb20:ccp:2.7.0")

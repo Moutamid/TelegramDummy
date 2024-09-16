@@ -73,4 +73,17 @@ public class MessageModel {
     public void setMedia(boolean media) {
         isMedia = media;
     }
+
+    @Override
+    public String toString() {
+        return "MessageModel{" +
+                "id='" + id + '\'' +
+                ", senderID='" + senderID + '\'' +
+                ", message='" + message + '\'' +
+                ", image='" + image + '\'' +
+                ", timestamp=" + timestamp +
+                ", isMedia=" + isMedia +
+                ", isDate=" + isDate +
+                '}';
+    }
 }

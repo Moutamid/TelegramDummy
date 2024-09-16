@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,8 +51,28 @@ public class ChatFragment extends Fragment {
         getChat();
     }
 
+    private static final String TAG = "ChatFragment";
     private void getChat() {
         list = Stash.getArrayList(Constants.USER, ChatModel.class);
+
+        for (ChatModel model : list) {
+            Log.d(TAG, "getChat: " + model.toString());
+        }
+
+        if (list.isEmpty()) {
+            list.add(new ChatModel(
+                    "+123456789",
+                    1,
+                    "Moutamid",
+                    "",
+                    "Moutamid joined Telegram",
+                    1726469485971L,
+                    "Online",
+                    -6730518
+            ));
+            Stash.put(Constants.USER, list);
+        }
+
         list.sort(Comparator.comparing(ChatModel::getTimestamp));
         Collections.reverse(list);
         adapter = new ChatAdapter(requireContext(), requireActivity(), list);
