@@ -62,6 +62,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatVH> implem
                 .setTextSize(14)
                 .toCircle()
                 .build()).into(holder.profile);
+
         holder.itemView.setOnClickListener(v -> {
             Stash.put(Constants.PASS_CHAT, model);
             context.startActivity(new Intent(context, ChatActivity.class));

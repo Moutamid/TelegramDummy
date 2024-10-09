@@ -3,6 +3,7 @@ package com.moutamid.telegramdummy.adapter;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -90,6 +91,18 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 holder.check.setImageResource(R.drawable.round_check_24);
             }
 
+            if (model.getMessage().length() < 8) {
+                holder.message.setPaddingRelative(
+                        holder.dpToPx(12), holder.dpToPx(8), holder.dpToPx(50), holder.dpToPx(20));
+            } else if (model.getMessage().length() < 5) {
+                holder.message.setPaddingRelative(
+                        holder.dpToPx(12), holder.dpToPx(8), holder.dpToPx(60), holder.dpToPx(20));
+            } else {
+                holder.message.setPaddingRelative(
+                        holder.dpToPx(12), holder.dpToPx(8), holder.dpToPx(20), holder.dpToPx(20));
+            }
+
+
             holder.message.setText(model.getMessage());
             Glide.with(context).load(model.getImage()).placeholder(R.color.black).into(holder.imageView);
             String time = new SimpleDateFormat("hh:mm aa", Locale.getDefault()).format(model.getTimestamp());
@@ -109,6 +122,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         });
 
     }
+
 
     private void openViewer(int pos) {
         Dialog dialog = new Dialog(context);
@@ -201,6 +215,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             imageView = itemView.findViewById(R.id.photo);
             check = itemView.findViewById(R.id.check);
         }
+
+        public int dpToPx(int dp) {
+            return (int) TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP, dp, itemView.getResources().getDisplayMetrics());
+        }
+
     }
 
 }
