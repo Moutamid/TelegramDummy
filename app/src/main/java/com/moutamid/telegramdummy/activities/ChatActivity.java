@@ -150,72 +150,88 @@ public class ChatActivity extends AppCompatActivity {
 
     private void getMessages() {
         list = Stash.getArrayList(chatModel.getId(), MessageModel.class);
-//        for (MessageModel model : list) {
-//            Log.d(TAG, "getChat: " + model.toString());
-//        }
-//        if (list.isEmpty()) {
-//            UserModel userModel = (UserModel) Stash.getObject(Constants.STASH_USER, UserModel.class);
-//            list.add(new MessageModel(
-//                    "bc0bd0cb-8499-40ab-a3c9-ccb7ed715c10",
-//                    userModel.getNumber(),
-//                    "Hii\t\t\t",
-//                    "",
-//                    1726469627444L,
-//                    false,
-//                    false
-//            ));
-//
-//            list.add(new MessageModel(
-//                    "150d1b50-1c64-411b-9c1f-5bc952625431",
-//                    userModel.getNumber(),
-//                    "How you doing\t\t\t",
-//                    "",
-//                    1726469633253L,
-//                    false,
-//                    false
-//            ));
-//
-//            list.add(new MessageModel(
-//                    "969867cb-9cb2-422b-903d-8004bbfd9bbf",
-//                    "+123456789",
-//                    "Hiii\t\t",
-//                    "",
-//                    1726469636998L,
-//                    false,
-//                    false
-//            ));
-//
-//            list.add(new MessageModel(
-//                    "6bd57663-9257-473c-ad3c-790918d66288",
-//                    "+123456789",
-//                    "I am fine, How are you\t\t",
-//                    "",
-//                    1726469647566L,
-//                    false,
-//                    false
-//            ));
-//
-//            list.add(new MessageModel(
-//                    "157f6a38-13a9-41ec-83cd-c37e4f91547f",
-//                    userModel.getNumber(),
-//                    "Good\t\t\t",
-//                    "",
-//                    1726469652484L,
-//                    false,
-//                    false
-//            ));
-//
-//            list.add(new MessageModel(
-//                    "bc044155-b477-4e4b-9066-a40ec23ea3c4",
-//                    "",
-//                    "",
-//                    "",
-//                    1726531200000L,
-//                    false,
-//                    true
-//            ));
-//            Stash.put(chatModel.getId(), list);
-//        }
+        for (MessageModel model : list) {
+            Log.d(TAG, "getChat: " + model.toString());
+        }
+        if (list.isEmpty()) {
+            UserModel userModel = (UserModel) Stash.getObject(Constants.STASH_USER, UserModel.class);
+            list.add(new MessageModel(
+                    "bc0bd0cb-8499-40ab-a3c9-ccb7ed715c10",
+                    userModel.getNumber(),
+                    "Hii\t\t\t",
+                    "",
+                    1726469627444L,
+                    false,
+                    false
+            ));
+
+            list.add(new MessageModel(
+                    "150d1b50-1c64-411b-9c1f-5bc952625431",
+                    userModel.getNumber(),
+                    "How you doing\t\t\t",
+                    "",
+                    1726469633253L,
+                    false,
+                    false
+            ));
+
+            list.add(new MessageModel(
+                    "969867cb-9cb2-422b-903d-8004bbfd9bbf",
+                    "+123456789",
+                    "Hiii\t\t",
+                    "",
+                    1726469636998L,
+                    false,
+                    false
+            ));
+
+            list.add(new MessageModel(
+                    "6bd57663-9257-473c-ad3c-790918d66288",
+                    "+123456789",
+                    "I am fine, How are you\t\t",
+                    "",
+                    1726469647566L,
+                    false,
+                    false
+            ));
+            list.add(new MessageModel(
+                    "157f6a38-13a9-41ec-83cd-c37e4f91547f",
+                    userModel.getNumber(),
+                    "Good\t\t\t",
+                    "",
+                    1726469652484L,
+                    false,
+                    false
+            ));
+            list.add(new MessageModel(
+                    "bc044155-b477-4e4b-9066-a40ec23ea3c4",
+                    "",
+                    "",
+                    "",
+                    1726531200000L,
+                    false,
+                    true
+            ));
+            list.add(new MessageModel(
+                    "1g57f6a38-13a9-4g1ec-83cd-c37e4f9154s7f",
+                    userModel.getNumber(),
+                    "Image with caption\t\t\t",
+                    "https://static.vecteezy.com/system/resources/thumbnails/024/646/930/small_2x/ai-generated-stray-cat-in-danger-background-animal-background-photo.jpg",
+                    1726469652423L,
+                    true,
+                    false
+            ));
+            list.add(new MessageModel(
+                    "157f6a38f-13a9-41ec-83cd-c37e4fd915d47f",
+                    "+123456789",
+                    "",
+                    "https://images.pexels.com/photos/7542125/pexels-photo-7542125.jpeg?cs=srgb&dl=pexels-kh-ali-li-7542125.jpg&fm=jpg",
+                    1726469652424L,
+                    true,
+                    false
+            ));
+            Stash.put(chatModel.getId(), list);
+        }
         adapter = new MessageAdapter(this, list, chatModel.getName(), deleteListener);
         binding.chatRC.setAdapter(adapter);
         binding.chatRC.scrollToPosition(list.size() - 1);

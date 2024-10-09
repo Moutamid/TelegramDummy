@@ -3,6 +3,7 @@ package com.moutamid.telegramdummy.adapter;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,7 +33,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageVH> {
-
+    private static final String TAG = "MessageAdapter";
     Context context;
     ArrayList<MessageModel> list;
     String name;
@@ -104,7 +105,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
 
             holder.message.setText(model.getMessage());
-            Glide.with(context).load(model.getImage()).placeholder(R.color.black).into(holder.imageView);
             String time = new SimpleDateFormat("hh:mm aa", Locale.getDefault()).format(model.getTimestamp());
             holder.time.setText(time);
         } else {
@@ -113,6 +113,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         }
 
         if (model.isMedia()){
+            Log.d(TAG, "onBindViewHolder: " + model.getImage());
+            Glide.with(context).load(model.getImage()).placeholder(R.color.black).into(holder.imageView);
             holder.imageView.setOnClickListener(v -> openViewer(holder.getAbsoluteAdapterPosition()));
         }
 
