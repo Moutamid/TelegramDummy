@@ -2,6 +2,7 @@ package com.moutamid.telegramdummy.adapter;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.util.Log;
 import android.util.TypedValue;
@@ -11,6 +12,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
@@ -34,10 +36,12 @@ import java.util.Locale;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageVH> {
     private static final String TAG = "MessageAdapter";
-    Context context;
-    ArrayList<MessageModel> list;
-    String name;
-    DeleteListener deleteListener;
+
+    private final Context context;
+    private final ArrayList<MessageModel> list;
+    private final String name;
+    private final DeleteListener deleteListener;
+
     private static final int MSG_TYPE_LEFT = 0;
     private static final int MSG_TYPE_RIGHT = 1;
     private static final int MSG_TYPE_RIGHT_MEDIA = 2;
@@ -46,6 +50,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private static final int MSG_TYPE_LEFT_MEDIA_CAPTION = 5;
     private static final int DATE_TYPE = 6;
 
+    // Constructor
     public MessageAdapter(Context context, ArrayList<MessageModel> list, String name, DeleteListener deleteListener) {
         this.context = context;
         this.list = list;
@@ -57,147 +62,137 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     @Override
     public MessageVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view;
-        if (viewType == DATE_TYPE) {
-            view = LayoutInflater.from(context).inflate(R.layout.date_item, parent, false);
-        } else if (viewType == MSG_TYPE_LEFT) {
-            view = LayoutInflater.from(context).inflate(R.layout.chat_left, parent, false);
-        } else if (viewType == MSG_TYPE_RIGHT) {
-            view = LayoutInflater.from(context).inflate(R.layout.chat_right, parent, false);
-        } else if (viewType == MSG_TYPE_RIGHT_MEDIA) {
-            view = LayoutInflater.from(context).inflate(R.layout.chat_right_media, parent, false);
-        }  else if (viewType == MSG_TYPE_LEFT_MEDIA) {
-            view = LayoutInflater.from(context).inflate(R.layout.chat_left_media, parent, false);
-        } else if (viewType == MSG_TYPE_RIGHT_MEDIA_CAPTION) {
-            view = LayoutInflater.from(context).inflate(R.layout.chat_right_media_caption, parent, false);
-        }  else {
-            view = LayoutInflater.from(context).inflate(R.layout.chat_left_media_caption, parent, false);
+
+        switch (viewType) {
+            case DATE_TYPE:
+                view = LayoutInflater.from(context).inflate(R.layout.date_item, parent, false);
+                break;
+            case MSG_TYPE_LEFT:
+                view = LayoutInflater.from(context).inflate(R.layout.chat_left, parent, false);
+                break;
+            case MSG_TYPE_RIGHT:
+                view = LayoutInflater.from(context).inflate(R.layout.chat_right, parent, false);
+                break;
+            case MSG_TYPE_RIGHT_MEDIA:
+                view = LayoutInflater.from(context).inflate(R.layout.chat_right_media, parent, false);
+                break;
+            case MSG_TYPE_LEFT_MEDIA:
+                view = LayoutInflater.from(context).inflate(R.layout.chat_left_media, parent, false);
+                break;
+            case MSG_TYPE_RIGHT_MEDIA_CAPTION:
+                view = LayoutInflater.from(context).inflate(R.layout.chat_right_media_caption, parent, false);
+                break;
+            case MSG_TYPE_LEFT_MEDIA_CAPTION:
+                view = LayoutInflater.from(context).inflate(R.layout.chat_left_media_caption, parent, false);
+                break;
+            default:
+                throw new IllegalStateException("Unexpected viewType: " + viewType);
         }
         return new MessageVH(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull MessageVH holder, int position) {
-        MessageModel model = list.get(holder.getAbsoluteAdapterPosition());
+        MessageModel model = list.get(position);
+        holder.setIsRecyclable(false);
 
-        if (!model.isDate()){
-            ChatModel chatModel = (ChatModel) Stash.getObject(Constants.PASS_CHAT, ChatModel.class);
-            String status = chatModel.getStatus();
-            if (status.equalsIgnoreCase("online")) {
-                holder.check.setImageResource(R.drawable.check);
-            } else if (status.equalsIgnoreCase("typing...")) {
-                holder.check.setImageResource(R.drawable.check);
-            } else if (status.startsWith("last seen")) {
-                holder.check.setImageResource(R.drawable.round_check_24);
-            } else {
-                holder.check.setImageResource(R.drawable.round_check_24);
+        // Handle display for message or date
+        if (!model.isDate()) {
+            // Set the checkmark status (e.g., online, typing, last seen)
+            setCheckStatus(holder, model);
+
+            // Adjust padding for shorter messages
+            adjustMessagePadding(holder, model);
+
+            // Set the message text and time
+            holder.message.setText(formatMessage(model.getMessage(), 44));
+            holder.time.setText(formatTime(model.getTimestamp(), "hh:mm aa"));
+
+            // Load media if present
+            if (model.isMedia()) {
+                loadImage(holder, model.getImage());
             }
 
-            if (model.getMessage().length() < 8) {
-                holder.message.setPaddingRelative(
-                        holder.dpToPx(12), holder.dpToPx(8), holder.dpToPx(50), holder.dpToPx(20));
-            } else if (model.getMessage().length() < 5) {
-                holder.message.setPaddingRelative(
-                        holder.dpToPx(12), holder.dpToPx(8), holder.dpToPx(60), holder.dpToPx(20));
-            } else {
-                holder.message.setPaddingRelative(
-                        holder.dpToPx(12), holder.dpToPx(8), holder.dpToPx(20), holder.dpToPx(20));
-            }
-
-
-            holder.message.setText(model.getMessage());
-            String time = new SimpleDateFormat("hh:mm aa", Locale.getDefault()).format(model.getTimestamp());
-            holder.time.setText(time);
         } else {
-            String time = new SimpleDateFormat("MMMM dd", Locale.getDefault()).format(model.getTimestamp());
-            holder.time.setText(time);
+            // Set formatted date in case it's a date item
+            holder.time.setText(formatTime(model.getTimestamp(), "MMMM dd"));
         }
 
-        if (model.isMedia()){
-            Log.d(TAG, "onBindViewHolder: " + model.getImage());
-            Glide.with(context).load(model.getImage()).placeholder(R.color.black).into(holder.imageView);
-            holder.imageView.setOnClickListener(v -> openViewer(holder.getAbsoluteAdapterPosition()));
-        }
-
+        // Handle long press for delete
         holder.itemView.setOnLongClickListener(v -> {
-            deleteListener.onHoldClick(list.get(holder.getAbsoluteAdapterPosition()));
+            deleteListener.onHoldClick(model);
             return true;
         });
-
     }
 
+    private void setCheckStatus(MessageVH holder, MessageModel model) {
+        ChatModel chatModel = (ChatModel) Stash.getObject(Constants.PASS_CHAT, ChatModel.class);
+        String status = chatModel.getStatus();
 
-    private void openViewer(int pos) {
+        if ("online".equalsIgnoreCase(status) || "typing...".equalsIgnoreCase(status)) {
+            holder.check.setImageResource(R.drawable.check);
+        } else {
+            holder.check.setImageResource(R.drawable.round_check_24);
+        }
+    }
+
+    private void adjustMessagePadding(MessageVH holder, MessageModel model) {
+        if (model.getMessage().length() <= 43) {
+            holder.message.setPaddingRelative(holder.dpToPx(12), holder.dpToPx(8), holder.dpToPx(60), holder.dpToPx(8));
+        }
+    }
+
+    private void loadImage(MessageVH holder, String imageUrl) {
+        Log.d(TAG, "Loading image: " + imageUrl);
+        Glide.with(context).load(imageUrl).placeholder(R.color.black).into(holder.imageView);
+        holder.imageView.setOnClickListener(v -> openImageViewer(holder.getAbsoluteAdapterPosition()));
+    }
+
+    // Opens image viewer with the list of media
+    private void openImageViewer(int pos) {
         Dialog dialog = new Dialog(context);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.imageviewer);
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         dialog.setCancelable(true);
         dialog.show();
 
+        // Setup recycler view inside dialog for image swiping
         RecyclerView recyclerView = dialog.findViewById(R.id.imageRC);
-        MaterialCardView back = dialog.findViewById(R.id.back);
-        TextView name = dialog.findViewById(R.id.name);
-
-        name.setText(this.name);
-        back.setOnClickListener(v -> dialog.dismiss());
-
         recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
-        recyclerView.setHasFixedSize(false);
-
-        MessageModel model = list.get(pos);
 
         ArrayList<String> imageList = new ArrayList<>();
-        for (MessageModel messageModel : list){
-            if (messageModel.isMedia()){
+        for (MessageModel messageModel : list) {
+            if (messageModel.isMedia()) {
                 imageList.add(messageModel.getImage());
             }
         }
-        int i = 0;
-        for (int index = 0; index < imageList.size(); index++) {
-            String s = imageList.get(index);
-            if (model.getImage().equals(s)) {
-                i = index;
-                break;
-            }
-        }
+
+        int currentImageIndex = imageList.indexOf(list.get(pos).getImage());
+
+        // Attach snap helper for smooth scrolling
         PagerSnapHelper snapHelper = new PagerSnapHelper();
         snapHelper.attachToRecyclerView(recyclerView);
-        ImageAdapter adapter = new ImageAdapter(context, imageList, () -> {
-            dialog.dismiss();
-        });
+
+        ImageAdapter adapter = new ImageAdapter(context, imageList, dialog::dismiss);
         recyclerView.setAdapter(adapter);
-        recyclerView.scrollToPosition(i);
+        recyclerView.scrollToPosition(currentImageIndex);
     }
 
     @Override
     public int getItemViewType(int position) {
-        //get currently signed in user
+        MessageModel message = list.get(position);
         UserModel userModel = (UserModel) Stash.getObject(Constants.STASH_USER, UserModel.class);
-        if (!list.get(position).isDate()){
-            if (userModel.getNumber().equals(list.get(position).getSenderID())){
-                if (list.get(position).isMedia()){
-                    if (!list.get(position).getMessage().isEmpty()){
-                        return MSG_TYPE_RIGHT_MEDIA_CAPTION;
-                    } else {
-                        return MSG_TYPE_RIGHT_MEDIA;
-                    }
-                } else {
-                    return MSG_TYPE_RIGHT;
-                }
-            } else {
-                if (list.get(position).isMedia()){
-                    if (!list.get(position).getMessage().isEmpty()){
-                        return MSG_TYPE_LEFT_MEDIA_CAPTION;
-                    } else {
-                        return MSG_TYPE_LEFT_MEDIA;
-                    }
-                } else {
-                    return MSG_TYPE_LEFT;
-                }
-            }
-        } else {
+
+        if (message.isDate()) {
             return DATE_TYPE;
+        }
+
+        if (userModel.getNumber().equals(message.getSenderID())) {
+            return message.isMedia() ? (message.getMessage().isEmpty() ? MSG_TYPE_RIGHT_MEDIA : MSG_TYPE_RIGHT_MEDIA_CAPTION) : MSG_TYPE_RIGHT;
+        } else {
+            return message.isMedia() ? (message.getMessage().isEmpty() ? MSG_TYPE_LEFT_MEDIA : MSG_TYPE_LEFT_MEDIA_CAPTION) : MSG_TYPE_LEFT;
         }
     }
 
@@ -206,7 +201,36 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         return list.size();
     }
 
-    public class MessageVH extends RecyclerView.ViewHolder {
+    // Formats the message into chunks for better display
+    private static @NonNull StringBuilder formatMessage(String message, int chunkSize) {
+        String[] words = message.split(" ");
+        StringBuilder result = new StringBuilder();
+        StringBuilder currentChunk = new StringBuilder();
+
+        for (String word : words) {
+            if (currentChunk.length() + word.length() + 1 > chunkSize) {
+                result.append(currentChunk).append("\n");
+                currentChunk = new StringBuilder();
+            }
+            if (currentChunk.length() > 0) {
+                currentChunk.append(" ");
+            }
+            currentChunk.append(word);
+        }
+        if (currentChunk.length() > 0) {
+            result.append(currentChunk);
+        }
+
+        return result;
+    }
+
+    // Formats the time or date for display
+    private static String formatTime(long timestamp, String pattern) {
+        return new SimpleDateFormat(pattern, Locale.getDefault()).format(timestamp);
+    }
+
+    // ViewHolder class
+    public static class MessageVH extends RecyclerView.ViewHolder {
         TextView message, time;
         ImageView imageView, check;
 
@@ -218,11 +242,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             check = itemView.findViewById(R.id.check);
         }
 
+        // Converts dp to pixels
         public int dpToPx(int dp) {
             return (int) TypedValue.applyDimension(
                     TypedValue.COMPLEX_UNIT_DIP, dp, itemView.getResources().getDisplayMetrics());
         }
-
     }
-
 }

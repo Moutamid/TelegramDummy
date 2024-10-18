@@ -15,9 +15,9 @@
         android:background="@drawable/outgoing_bubble"
         android:paddingStart="12dp"
         android:paddingTop="8dp"
-        android:paddingEnd="20dp"
-        android:paddingBottom="20dp"
-        android:text="lore"
+        android:paddingEnd="15dp"
+        android:paddingBottom="8dp"
+        android:text="Hello, I am fine  how about you very good igda"
         android:textColor="@android:color/black"
         app:layout_constrainedWidth="true"
         app:layout_constraintEnd_toStartOf="@+id/marginSpacer_beforeMessage"
@@ -65,18 +65,18 @@
         android:id="@+id/check"
         android:layout_width="15dp"
         android:layout_height="15dp"
-        android:layout_marginBottom="2dp"
         android:layout_marginEnd="4dp"
+        android:layout_marginBottom="2dp"
         android:src="@drawable/check"
-        app:tint="@color/green"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/message" />
+        app:layout_constraintEnd_toEndOf="@+id/message"
+        app:tint="@color/green" />
 
 
     <ImageView
+        android:id="@+id/photo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/photo"
         android:visibility="gone"
         tools:ignore="MissingConstraints" />
 

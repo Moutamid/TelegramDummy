@@ -10,19 +10,19 @@
         android:id="@+id/message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="7dp"
-        android:layout_marginEnd="50dp"
-        android:background="@drawable/incoming_bubble"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="5dp"
+        android:background="@drawable/outgoing_bubble"
         android:paddingStart="12dp"
         android:paddingTop="8dp"
         android:paddingEnd="15dp"
         android:paddingBottom="8dp"
-        android:text="@string/lorem"
+        tools:text="Hello, I am fine  how about you very\ngood\nhello\t\t\t"
         android:textColor="@android:color/black"
         app:layout_constrainedWidth="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/marginSpacer_beforeMessage"
+        app:layout_constraintEnd_toStartOf="@+id/marginSpacer_beforeMessage"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Space
@@ -30,40 +30,33 @@
         android:layout_width="4dp"
         android:layout_height="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <ImageView
         android:id="@+id/message_tail"
         android:layout_width="14dp"
         android:layout_height="13dp"
-        android:layout_marginStart="1dp"
-        android:rotation="270"
-        android:scaleType="centerCrop"
         android:src="@drawable/tail"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/marginSpacer_beforeMessage"
-        app:tint="@color/white" />
+        app:layout_constraintEnd_toEndOf="@+id/marginSpacer_beforeMessage" />
 
     <ImageView
-        android:id="@+id/imageView"
         android:layout_width="10dp"
         android:layout_height="10dp"
         android:src="@drawable/green_square"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/message_tail"
-        app:tint="@color/white" />
+        app:layout_constraintEnd_toStartOf="@+id/message_tail" />
 
     <TextView
         android:id="@+id/time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="22dp"
-        android:layout_marginEnd="12dp"
+        android:layout_marginEnd="22dp"
         android:layout_marginBottom="3dp"
         android:maxLines="1"
         android:text="4:42 pm"
         android:textAllCaps="true"
-        android:textColor="@color/text"
+        android:textColor="@color/green"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/message" />
@@ -75,16 +68,15 @@
         android:layout_marginEnd="4dp"
         android:layout_marginBottom="2dp"
         android:src="@drawable/check"
-        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/message"
         app:tint="@color/green" />
+
 
     <ImageView
         android:id="@+id/photo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:adjustViewBounds="true"
         android:visibility="gone"
         tools:ignore="MissingConstraints" />
 
