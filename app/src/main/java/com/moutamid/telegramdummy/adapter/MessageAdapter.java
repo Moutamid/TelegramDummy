@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.util.Log;
+import android.util.Patterns;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,14 +16,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.fxn.stash.Stash;
-import com.google.android.material.card.MaterialCardView;
 import com.moutamid.telegramdummy.R;
 import com.moutamid.telegramdummy.models.ChatModel;
 import com.moutamid.telegramdummy.models.MessageModel;
@@ -30,9 +29,12 @@ import com.moutamid.telegramdummy.models.UserModel;
 import com.moutamid.telegramdummy.utili.Constants;
 import com.moutamid.telegramdummy.utili.DeleteListener;
 
+import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageVH> {
     private static final String TAG = "MessageAdapter";
@@ -62,7 +64,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     @Override
     public MessageVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view;
-
         switch (viewType) {
             case DATE_TYPE:
                 view = LayoutInflater.from(context).inflate(R.layout.date_item, parent, false);
@@ -96,6 +97,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         MessageModel model = list.get(position);
         holder.setIsRecyclable(false);
 
+        holder.itemView.setOnClickListener(v -> {
+            Toast.makeText(context, "Size " + model.getMessage().length(), Toast.LENGTH_SHORT).show();
+        });
+
         // Handle display for message or date
         if (!model.isDate()) {
             // Set the checkmark status (e.g., online, typing, last seen)
@@ -103,9 +108,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
             // Adjust padding for shorter messages
             adjustMessagePadding(holder, model);
+            String message = model.getMessage();
+            if (message.length() > 120) {
+                message += "\t\t\t\t\t";
+            }
 
-            // Set the message text and time
-            holder.message.setText(formatMessage(model.getMessage(), 44));
+            holder.message.setText(formatMessage(message));
             holder.time.setText(formatTime(model.getTimestamp(), "hh:mm aa"));
 
             // Load media if present
@@ -124,6 +132,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             return true;
         });
     }
+
 
     private void setCheckStatus(MessageVH holder, MessageModel model) {
         ChatModel chatModel = (ChatModel) Stash.getObject(Constants.PASS_CHAT, ChatModel.class);
@@ -201,28 +210,44 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         return list.size();
     }
 
-    // Formats the message into chunks for better display
-    private static @NonNull StringBuilder formatMessage(String message, int chunkSize) {
-        String[] words = message.split(" ");
-        StringBuilder result = new StringBuilder();
-        StringBuilder currentChunk = new StringBuilder();
+    public static boolean containsLineBreak(String text) {
+        return text != null && (text.indexOf('\n') != -1 || text.indexOf('\r') != -1);
+    }
 
-        for (String word : words) {
-            if (currentChunk.length() + word.length() + 1 > chunkSize) {
-                result.append(currentChunk).append("\n");
-                currentChunk = new StringBuilder();
+
+    // Formats the message into chunks for better display
+    private static @NonNull StringBuilder formatMessage(String message) {
+        StringBuilder result = new StringBuilder();
+        if (containsLineBreak(message)) {
+            Log.d(TAG, "formatMessage: BREAK");
+            result.append(message);
+        } else {
+            String[] words = message.split(" "); // .replaceAll("([\\r\\n]+)", "\n").replaceAll("\\s", " ")
+            StringBuilder currentChunk = new StringBuilder();
+            Log.d(TAG, "formatMessage: WORDSS  " + Arrays.toString(words));
+            for (String word : words) {
+                if (currentChunk.length() + word.length() + 1 > 44) {
+                    Log.d(TAG, "formatMessage: TRUE");
+                    Log.d(TAG, "formatMessage: words  " + word);
+                    Log.d(TAG, "formatMessage: word.length()  " + word.length());
+                    Log.d(TAG, "formatMessage: currentChunk.length()  " + currentChunk.length());
+                    Log.d(TAG, "formatMessage: Total  " + (currentChunk.length() + word.length() + 1));
+                    result.append(currentChunk).append("\n");
+                    currentChunk = new StringBuilder();
+                }
+                if (currentChunk.length() > 0) {
+                    currentChunk.append(" ");
+                }
+                currentChunk.append(word);
             }
             if (currentChunk.length() > 0) {
-                currentChunk.append(" ");
+                result.append(currentChunk);
             }
-            currentChunk.append(word);
         }
-        if (currentChunk.length() > 0) {
-            result.append(currentChunk);
-        }
-
         return result;
     }
+
+
 
     // Formats the time or date for display
     private static String formatTime(long timestamp, String pattern) {
