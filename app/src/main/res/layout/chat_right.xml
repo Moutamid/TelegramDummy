@@ -17,7 +17,8 @@
         android:paddingTop="8dp"
         android:paddingEnd="25dp"
         android:paddingBottom="8dp"
-        tools:text="Hallo, nächstes ticket quote 350\nDer Preis beträgt 3000€.\n700€ im Voraus\n2300€ nach gewinn.\nManipuliert und 100% sicher\t\t\t"
+        android:textSize="12dp"
+        tools:text="Hallo, nächstes ticket quote 350\nDer Preis beträgt 3000€.\n700€ im Voraus\n2300€ nach gewinn.\nManipuliert und 100% sicher\t\t\t\t\t\t"
         android:textColor="@android:color/black"
         app:layout_constrainedWidth="true"
         app:layout_constraintEnd_toStartOf="@+id/marginSpacer_beforeMessage"
@@ -57,7 +58,7 @@
         android:text="4:42 pm"
         android:textAllCaps="true"
         android:textColor="@color/green"
-        android:textSize="12sp"
+        android:textSize="10sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/message" />
 

@@ -221,17 +221,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         if (containsLineBreak(message)) {
             Log.d(TAG, "formatMessage: BREAK");
             result.append(message);
+            result.append("\n");
         } else {
             String[] words = message.split(" "); // .replaceAll("([\\r\\n]+)", "\n").replaceAll("\\s", " ")
             StringBuilder currentChunk = new StringBuilder();
-            Log.d(TAG, "formatMessage: WORDSS  " + Arrays.toString(words));
             for (String word : words) {
                 if (currentChunk.length() + word.length() + 1 > 44) {
-                    Log.d(TAG, "formatMessage: TRUE");
-                    Log.d(TAG, "formatMessage: words  " + word);
-                    Log.d(TAG, "formatMessage: word.length()  " + word.length());
-                    Log.d(TAG, "formatMessage: currentChunk.length()  " + currentChunk.length());
-                    Log.d(TAG, "formatMessage: Total  " + (currentChunk.length() + word.length() + 1));
                     result.append(currentChunk).append("\n");
                     currentChunk = new StringBuilder();
                 }

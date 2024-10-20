@@ -55,29 +55,29 @@ public class ChatFragment extends Fragment {
     private void getChat() {
         list = Stash.getArrayList(Constants.USER, ChatModel.class);
 
-        if (list.isEmpty()) {
-            list.add(new ChatModel(
-                    "+12345678934543",
-                    1,
-                    "Moutamid",
-                    "",
-                    "Moutamid joined Telegram",
-                    1726469485971L,
-                    "Online",
-                    -6730518
-            ));
-            list.add(new ChatModel(
-                    "+123456789566767",
-                    1,
-                    "Moutamid Waseem",
-                    "",
-                    "Moutamid W. joined Telegram",
-                    1726469485971L,
-                    "Online",
-                    -6730518
-            ));
-            Stash.put(Constants.USER, list);
-        }
+//        if (list.isEmpty()) {
+//            list.add(new ChatModel(
+//                    "+12345678934543",
+//                    1,
+//                    "Moutamid",
+//                    "",
+//                    "Moutamid joined Telegram",
+//                    1726469485971L,
+//                    "Online",
+//                    -6730518
+//            ));
+//            list.add(new ChatModel(
+//                    "+123456789566767",
+//                    1,
+//                    "Moutamid Waseem",
+//                    "",
+//                    "Moutamid W. joined Telegram",
+//                    1726469485971L,
+//                    "Online",
+//                    -6730518
+//            ));
+//            Stash.put(Constants.USER, list);
+//        }
 
         list.sort(Comparator.comparing(ChatModel::getTimestamp));
         Collections.reverse(list);
