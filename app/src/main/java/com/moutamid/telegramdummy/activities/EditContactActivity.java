@@ -46,6 +46,7 @@ public class EditContactActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Constants.adjustFontScale(this);
         binding = ActivityEditContactBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 

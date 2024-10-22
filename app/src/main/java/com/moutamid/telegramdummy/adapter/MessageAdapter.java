@@ -97,10 +97,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         MessageModel model = list.get(position);
         holder.setIsRecyclable(false);
 
-        holder.itemView.setOnClickListener(v -> {
-            Toast.makeText(context, "Size " + model.getMessage().length(), Toast.LENGTH_SHORT).show();
-        });
-
         // Handle display for message or date
         if (!model.isDate()) {
             // Set the checkmark status (e.g., online, typing, last seen)
@@ -241,8 +237,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         }
         return result;
     }
-
-
 
     // Formats the time or date for display
     private static String formatTime(long timestamp, String pattern) {

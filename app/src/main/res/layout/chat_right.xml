@@ -21,6 +21,8 @@
         tools:text="Hallo, nächstes ticket quote 350\nDer Preis beträgt 3000€.\n700€ im Voraus\n2300€ nach gewinn.\nManipuliert und 100% sicher\t\t\t\t\t\t"
         android:textColor="@android:color/black"
         app:layout_constrainedWidth="true"
+        android:textSize="14sp"
+        android:textIsSelectable="true"
         app:layout_constraintEnd_toStartOf="@+id/marginSpacer_beforeMessage"
         app:layout_constraintHorizontal_bias="1"
         app:layout_constraintStart_toStartOf="parent"

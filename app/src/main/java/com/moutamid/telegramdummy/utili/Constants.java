@@ -1,5 +1,7 @@
 package com.moutamid.telegramdummy.utili;
 
+import static android.content.Context.WINDOW_SERVICE;
+
 import com.moutamid.telegramdummy.R;
 
 import android.Manifest;
@@ -8,12 +10,16 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
@@ -54,6 +60,20 @@ public class Constants {
                     ContextCompat.checkSelfPermission(context, Manifest.permission.READ_MEDIA_VIDEO) == PackageManager.PERMISSION_GRANTED;
         } else {
             return ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        }
+    }
+
+    public static void adjustFontScale(Context context) {
+        Configuration configuration = context.getResources().getConfiguration();
+        if (configuration.fontScale > 1.00) {
+            Log.d(TAG, "fontScale=" + configuration.fontScale); //Custom Log class, you can use Log.w
+            Log.d(TAG, "font too big. scale down..."); //Custom Log class, you can use Log.w
+            configuration.fontScale = 1.00f;
+            DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+            WindowManager wm = (WindowManager) context.getSystemService(WINDOW_SERVICE);
+            wm.getDefaultDisplay().getMetrics(metrics);
+            metrics.scaledDensity = configuration.fontScale * metrics.density;
+            context.getResources().updateConfiguration(configuration, metrics);
         }
     }
 

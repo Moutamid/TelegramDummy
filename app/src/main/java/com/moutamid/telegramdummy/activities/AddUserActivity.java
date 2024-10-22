@@ -45,6 +45,7 @@ public class AddUserActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Constants.adjustFontScale(this);
         binding = ActivityAddUserBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
